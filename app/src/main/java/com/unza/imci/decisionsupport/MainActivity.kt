@@ -1,6 +1,7 @@
 package com.unza.imci.decisionsupport
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,9 +12,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.unza.imci.decisionsupport.ui.screens.ClassificationScreen
 import com.unza.imci.decisionsupport.ui.screens.DangerSignsScreen
+import com.unza.imci.decisionsupport.ui.screens.DiarrhoeaScreen
 import com.unza.imci.decisionsupport.ui.screens.HomeScreen
 import com.unza.imci.decisionsupport.ui.screens.PatientInfoScreen
+import com.unza.imci.decisionsupport.ui.screens.RespiratoryScreen
 import com.unza.imci.decisionsupport.ui.theme.ImciDecisionSupportTheme
 
 class MainActivity : ComponentActivity() {
@@ -25,28 +31,49 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // State to track which screen is currently showing
                     var currentScreen by remember { mutableStateOf("home") }
+                    val viewModel: AssessmentViewModel = viewModel()
+                    val context = LocalContext.current
 
                     when (currentScreen) {
-                        // 1. Home Screen
                         "home" -> HomeScreen(
                             onNewAssessment = { currentScreen = "patient_info" },
-                            onViewHistory = { /* TODO */ }
+                            onViewHistory = { }
                         )
 
-                        // 2. Patient Info Screen
                         "patient_info" -> PatientInfoScreen(
+                            viewModel = viewModel,
                             onBack = { currentScreen = "home" },
-                            onNext = { id -> currentScreen = "danger_signs" }
+                            onNext = { currentScreen = "danger_signs" }
                         )
 
-                        // 3. Danger Signs Screen
                         "danger_signs" -> DangerSignsScreen(
+                            viewModel = viewModel,
                             onBack = { currentScreen = "patient_info" },
-                            onNext = { signs ->
-                                // We will build the next screen (Respiratory) in the next step!
+                            onNext = { currentScreen = "respiratory" }
+                        )
+
+                        "respiratory" -> RespiratoryScreen(
+                            viewModel = viewModel,
+                            onBack = { currentScreen = "danger_signs" },
+                            onNext = { currentScreen = "diarrhoea" }
+                        )
+
+                        "diarrhoea" -> DiarrhoeaScreen(
+                            viewModel = viewModel,
+                            onBack = { currentScreen = "respiratory" },
+                            onNext = {
+                                viewModel.calculateResults()
+                                currentScreen = "classification"
                             }
+                        )
+
+                        "classification" -> ClassificationScreen(
+                            viewModel = viewModel,
+                            onSave = {
+                                Toast.makeText(context, "Assessment Saved!", Toast.LENGTH_SHORT).show()
+                            },
+                            onFinish = { currentScreen = "home" }
                         )
                     }
                 }
