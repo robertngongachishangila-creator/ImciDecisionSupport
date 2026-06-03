@@ -2,6 +2,7 @@ package com.unza.imci.decisionsupport.data.repository
 
 import com.unza.imci.decisionsupport.data.database.AssessmentDao
 import com.unza.imci.decisionsupport.data.model.AssessmentEntity
+import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 
 /**
@@ -34,7 +35,7 @@ class AssessmentRepository(private val assessmentDao: AssessmentDao) {
      * Retrieves all stored assessments from the local database.
      * Ordered by timestamp (newest first).
      */
-    suspend fun getAllAssessments(): List<AssessmentEntity> {
+    fun getAllAssessments(): Flow<List<AssessmentEntity>> {
         return assessmentDao.getAllAssessments()
     }
 

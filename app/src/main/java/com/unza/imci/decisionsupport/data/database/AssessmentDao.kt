@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import com.unza.imci.decisionsupport.data.model.AssessmentEntity
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Data Access Object for IMCI assessments.
@@ -25,7 +26,7 @@ interface AssessmentDao {
      * Returns assessments ordered by most recent first.
      */
     @Query("SELECT * FROM assessments ORDER BY timestamp DESC")
-    suspend fun getAllAssessments(): List<AssessmentEntity>
+    fun getAllAssessments(): Flow<List<AssessmentEntity>>
 
     /**
      * Retrieve a specific assessment by ID.

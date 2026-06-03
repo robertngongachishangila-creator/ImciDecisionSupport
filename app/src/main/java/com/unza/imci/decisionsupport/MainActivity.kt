@@ -1,20 +1,21 @@
 package com.unza.imci.decisionsupport
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import com.unza.imci.decisionsupport.ui.screens.DangerSignsScreen
-import com.unza.imci.decisionsupport.ui.screens.HomeScreen
-import com.unza.imci.decisionsupport.ui.screens.PatientInfoScreen
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.unza.imci.decisionsupport.data.model.AssessmentEntity
+import com.unza.imci.decisionsupport.ui.screens.*
 import com.unza.imci.decisionsupport.ui.theme.ImciDecisionSupportTheme
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,29 +26,88 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // State to track which screen is currently showing
                     var currentScreen by remember { mutableStateOf("home") }
+                    var selectedAssessment by remember { mutableStateOf<AssessmentEntity?>(null) }
+
+                    val viewModel: AssessmentViewModel = viewModel()
+                    val context = LocalContext.current
+                    val scope = rememberCoroutineScope()
+
+                    var allAssessments by remember { mutableStateOf(listOf<AssessmentEntity>()) }
+
+                    LaunchedEffect(currentScreen) {
+                        if (currentScreen == "history") {
+                            scope.launch {
+                                viewModel.getAllAssessments().collectLatest { assessments ->
+                                    allAssessments = assessments
+                                }
+                            }
+                        }
+                    }
 
                     when (currentScreen) {
-                        // 1. Home Screen
                         "home" -> HomeScreen(
-                            onNewAssessment = { currentScreen = "patient_info" },
-                            onViewHistory = { /* TODO */ }
+                            onNewAssessment = {
+                                viewModel.resetForm()
+                                currentScreen = "patient_info"
+                            },
+                            onViewHistory = { currentScreen = "history" }
                         )
-
-                        // 2. Patient Info Screen
                         "patient_info" -> PatientInfoScreen(
+                            viewModel = viewModel,
                             onBack = { currentScreen = "home" },
-                            onNext = { id -> currentScreen = "danger_signs" }
+                            onNext = { currentScreen = "danger_signs" }
                         )
-
-                        // 3. Danger Signs Screen
                         "danger_signs" -> DangerSignsScreen(
+                            viewModel = viewModel,
                             onBack = { currentScreen = "patient_info" },
-                            onNext = { signs ->
-                                // We will build the next screen (Respiratory) in the next step!
+                            onNext = { currentScreen = "respiratory" }
+                        )
+                        "respiratory" -> RespiratoryScreen(
+                            viewModel = viewModel,
+                            onBack = { currentScreen = "danger_signs" },
+                            onNext = { currentScreen = "diarrhoea" }
+                        )
+                        "diarrhoea" -> DiarrhoeaScreen(
+                            viewModel = viewModel,
+                            onBack = { currentScreen = "respiratory" },
+                            onNext = {
+                                viewModel.calculateResults()
+                                currentScreen = "classification"
                             }
                         )
+                        "classification" -> ClassificationScreen(
+                            viewModel = viewModel,
+                            onSave = {
+                                viewModel.saveAssessment {
+                                    Toast.makeText(context, "✅ Assessment Saved!", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            onFinish = {
+                                viewModel.resetForm()
+                                currentScreen = "home"
+                            }
+                        )
+                        "history" -> HistoryScreen(
+                            assessments = allAssessments,
+                            onBack = { currentScreen = "home" },
+                            onItemClick = { assessment ->
+                                selectedAssessment = assessment
+                                currentScreen = "detail"
+                            },
+                            onDeleteAssessment = { assessment ->
+                                scope.launch {
+                                    viewModel.deleteAssessment(assessment)
+                                    Toast.makeText(context, "Assessment deleted", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        )
+                        "detail" -> selectedAssessment?.let { assessment ->
+                            AssessmentDetailScreen(
+                                assessment = assessment,
+                                onBack = { currentScreen = "history" }
+                            )
+                        }
                     }
                 }
             }
