@@ -36,10 +36,15 @@ data class PatientAssessment(
     val stiffNeck: Boolean = false,
     val runnyNose: Boolean = false,
     val measles: Boolean = false,
+    val cloudingOfCornea: Boolean = false,
+    val deepOrExtensiveMouthUlcers: Boolean = false,
+    val mouthUlcers: Boolean = false,
+    val pusDrainingFromEye: Boolean = false,
 
     // Ear Problems
     val hasEarPain: Boolean = false,
     val earDischarge: Boolean = false,
+    val earDischargeDurationDays: Int? = null,
     val tenderSwellingBehindEar: Boolean = false,
 
     // Malnutrition / Anaemia

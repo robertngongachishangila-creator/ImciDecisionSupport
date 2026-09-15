@@ -19,6 +19,7 @@ import com.unza.imci.decisionsupport.ui.theme.IMCIWarning
 @Composable
 fun ClassificationScreen(
     viewModel: AssessmentViewModel,
+    onBack: () -> Unit,
     onSave: () -> Unit,
     onFinish: () -> Unit
 ) {
@@ -28,8 +29,14 @@ fun ClassificationScreen(
             .background(IMCIBackground)
             .padding(16.dp)
     ) {
+        TextButton(onClick = onBack) {
+            Text("← Back", fontSize = 18.sp)
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
         Text(
-            text = "Step 5: Classification",
+            text = "Step 8: Classification",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Black

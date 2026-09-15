@@ -52,4 +52,12 @@ class AssessmentRepository(private val assessmentDao: AssessmentDao) {
     suspend fun deleteAssessment(id: Int) {
         assessmentDao.deleteAssessment(id)
     }
+
+    /**
+     * Deletes all locally stored assessments. Used as the recovery path when the
+     * app-level PIN is reset, since the app has no other way to recover access.
+     */
+    suspend fun deleteAllAssessments() {
+        assessmentDao.deleteAllAssessments()
+    }
 }

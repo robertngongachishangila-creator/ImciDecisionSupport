@@ -6,6 +6,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.unza.imci.decisionsupport.data.database.AppDatabase
 import com.unza.imci.decisionsupport.data.database.AssessmentDao
 import com.unza.imci.decisionsupport.data.model.AssessmentEntity
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -54,7 +55,7 @@ class AssessmentDaoTest {
         dao.insertAssessment(assessment)
 
         // 3. Retrieve and verify
-        val allAssessments = dao.getAllAssessments()
+        val allAssessments = dao.getAllAssessments().first()
 
         assertEquals("Should retrieve exactly 1 assessment", 1, allAssessments.size)
         assertEquals("Patient ID should match", "TEST_001", allAssessments[0].patientId)
@@ -70,12 +71,12 @@ class AssessmentDaoTest {
             classification = "No illness",
             treatmentRecommendation = "Home care"
         )
-        dao.insertAssessment(assessment)
-        assertEquals("Initial count should be 1", 1, dao.getAllAssessments().size)
+        val insertedId = dao.insertAssessment(assessment)
+        assertEquals("Initial count should be 1", 1, dao.getAllAssessments().first().size)
 
         // Delete
-        dao.deleteAssessment(assessment.id)
-        val afterDelete = dao.getAllAssessments()
+        dao.deleteAssessment(insertedId.toInt())
+        val afterDelete = dao.getAllAssessments().first()
 
         assertTrue("Database should be empty after deletion", afterDelete.isEmpty())
     }

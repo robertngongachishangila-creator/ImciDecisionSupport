@@ -43,7 +43,30 @@ class AssessmentViewModel(application: Application) : AndroidViewModel(applicati
     var bloodInStool by mutableStateOf(false)
     var sunkenEyes by mutableStateOf(false)
 
-    // 5. Classification Results
+    // 5. Fever
+    var hasFever by mutableStateOf(false)
+    var feverDurationDays by mutableIntStateOf(0)
+    var stiffNeck by mutableStateOf(false)
+    var runnyNose by mutableStateOf(false)
+    var measles by mutableStateOf(false)
+    var cloudingOfCornea by mutableStateOf(false)
+    var deepOrExtensiveMouthUlcers by mutableStateOf(false)
+    var mouthUlcers by mutableStateOf(false)
+    var pusDrainingFromEye by mutableStateOf(false)
+
+    // 6. Ear Problems
+    var hasEarPain by mutableStateOf(false)
+    var earDischarge by mutableStateOf(false)
+    var earDischargeDurationDays by mutableIntStateOf(0)
+    var tenderSwellingBehindEar by mutableStateOf(false)
+
+    // 7. Malnutrition / Anaemia
+    var visibleSevereWasting by mutableStateOf(false)
+    var bilateralPittingOedema by mutableStateOf(false)
+    var muacCm by mutableStateOf("")
+    var palePalms by mutableStateOf(false)
+
+    // 8. Classification Results
     var classificationTitle by mutableStateOf("")
     var treatmentText by mutableStateOf("")
 
@@ -63,7 +86,24 @@ class AssessmentViewModel(application: Application) : AndroidViewModel(applicati
             hasDiarrhoea = hasDiarrhoea,
             diarrhoeaDurationDays = if (diarrhoeaDurationDays == 0) null else diarrhoeaDurationDays,
             bloodInStool = bloodInStool,
-            sunkenEyes = sunkenEyes
+            sunkenEyes = sunkenEyes,
+            hasFever = hasFever,
+            feverDurationDays = if (feverDurationDays == 0) null else feverDurationDays,
+            stiffNeck = stiffNeck,
+            runnyNose = runnyNose,
+            measles = measles,
+            cloudingOfCornea = cloudingOfCornea,
+            deepOrExtensiveMouthUlcers = deepOrExtensiveMouthUlcers,
+            mouthUlcers = mouthUlcers,
+            pusDrainingFromEye = pusDrainingFromEye,
+            hasEarPain = hasEarPain,
+            earDischarge = earDischarge,
+            earDischargeDurationDays = if (earDischargeDurationDays == 0) null else earDischargeDurationDays,
+            tenderSwellingBehindEar = tenderSwellingBehindEar,
+            visibleSevereWasting = visibleSevereWasting,
+            bilateralPittingOedema = bilateralPittingOedema,
+            muacCm = muacCm.toFloatOrNull(),
+            palePalms = palePalms
         )
 
         val result = engine.assess(assessment)
@@ -100,7 +140,24 @@ class AssessmentViewModel(application: Application) : AndroidViewModel(applicati
               "hasDiarrhoea": $hasDiarrhoea,
               "diarrhoeaDurationDays": $diarrhoeaDurationDays,
               "bloodInStool": $bloodInStool,
-              "sunkenEyes": $sunkenEyes
+              "sunkenEyes": $sunkenEyes,
+              "hasFever": $hasFever,
+              "feverDurationDays": $feverDurationDays,
+              "stiffNeck": $stiffNeck,
+              "runnyNose": $runnyNose,
+              "measles": $measles,
+              "cloudingOfCornea": $cloudingOfCornea,
+              "deepOrExtensiveMouthUlcers": $deepOrExtensiveMouthUlcers,
+              "mouthUlcers": $mouthUlcers,
+              "pusDrainingFromEye": $pusDrainingFromEye,
+              "hasEarPain": $hasEarPain,
+              "earDischarge": $earDischarge,
+              "earDischargeDurationDays": $earDischargeDurationDays,
+              "tenderSwellingBehindEar": $tenderSwellingBehindEar,
+              "visibleSevereWasting": $visibleSevereWasting,
+              "bilateralPittingOedema": $bilateralPittingOedema,
+              "muacCm": ${muacCm.toFloatOrNull()},
+              "palePalms": $palePalms
             }
         """.trimIndent()
     }
@@ -111,6 +168,10 @@ class AssessmentViewModel(application: Application) : AndroidViewModel(applicati
 
     suspend fun deleteAssessment(assessment: AssessmentEntity) {
         repository.deleteAssessment(assessment.id)
+    }
+
+    suspend fun deleteAllAssessments() {
+        repository.deleteAllAssessments()
     }
 
     fun resetForm() {
@@ -129,6 +190,23 @@ class AssessmentViewModel(application: Application) : AndroidViewModel(applicati
         diarrhoeaDurationDays = 0
         bloodInStool = false
         sunkenEyes = false
+        hasFever = false
+        feverDurationDays = 0
+        stiffNeck = false
+        runnyNose = false
+        measles = false
+        cloudingOfCornea = false
+        deepOrExtensiveMouthUlcers = false
+        mouthUlcers = false
+        pusDrainingFromEye = false
+        hasEarPain = false
+        earDischarge = false
+        earDischargeDurationDays = 0
+        tenderSwellingBehindEar = false
+        visibleSevereWasting = false
+        bilateralPittingOedema = false
+        muacCm = ""
+        palePalms = false
         classificationTitle = ""
         treatmentText = ""
     }

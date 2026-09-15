@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -18,7 +19,14 @@ fun PatientInfoScreen(
     onBack: () -> Unit,
     onNext: () -> Unit
 ) {
-    var ageInput by remember { mutableStateOf(if (viewModel.ageInMonths == 0) "" else viewModel.ageInMonths.toString()) }
+    var yearsInput by remember { mutableStateOf(if (viewModel.ageInMonths == 0) "" else (viewModel.ageInMonths / 12).toString()) }
+    var monthsInput by remember { mutableStateOf(if (viewModel.ageInMonths == 0) "" else (viewModel.ageInMonths % 12).toString()) }
+
+    fun updateAge() {
+        val years = yearsInput.toIntOrNull() ?: 0
+        val months = monthsInput.toIntOrNull() ?: 0
+        viewModel.ageInMonths = (years * 12) + months
+    }
 
     Column(
         modifier = Modifier
@@ -42,16 +50,34 @@ fun PatientInfoScreen(
 
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Age (months)", fontWeight = FontWeight.Medium)
-                OutlinedTextField(
-                    value = ageInput,
-                    onValueChange = {
-                        ageInput = it
-                        viewModel.ageInMonths = it.toIntOrNull() ?: 0
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("e.g., 24") }
-                )
+                Text("Age", fontWeight = FontWeight.Medium)
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Years", fontSize = 14.sp, color = Color.DarkGray)
+                        OutlinedTextField(
+                            value = yearsInput,
+                            onValueChange = {
+                                yearsInput = it
+                                updateAge()
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("e.g., 2") }
+                        )
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Months", fontSize = 14.sp, color = Color.DarkGray)
+                        OutlinedTextField(
+                            value = monthsInput,
+                            onValueChange = {
+                                monthsInput = it
+                                updateAge()
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("0–11") }
+                        )
+                    }
+                }
             }
         }
 
