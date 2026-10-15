@@ -35,7 +35,7 @@ fun EarScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         Text(
-            text = "Step 6: Ear Problem Assessment",
+            text = "👂 Step 6: Ear Problem Assessment",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Black

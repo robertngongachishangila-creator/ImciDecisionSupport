@@ -16,3 +16,11 @@ val IMCISecondary = Color(0xFF1976D2)
 val IMCIDanger = Color(0xFFD32F2F)
 val IMCIWarning = Color(0xFFFFA000)
 val IMCIBackground = Color(0xFFF5F5F5)
+
+// IMCI Chart Booklet severity rows: pink = urgent referral, yellow = treatment, green = home care
+val IMCISeverePink = Color(0xFFFFCDD2)
+val IMCISevereText = Color(0xFFB71C1C)
+val IMCIModerateYellow = Color(0xFFFFF59D)
+val IMCIModerateText = Color(0xFF5D4200)
+val IMCIMildGreen = Color(0xFFC8E6C9)
+val IMCIMildText = Color(0xFF1B5E20)

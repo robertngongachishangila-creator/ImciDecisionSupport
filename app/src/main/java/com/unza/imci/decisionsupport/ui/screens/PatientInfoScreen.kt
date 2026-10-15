@@ -41,7 +41,7 @@ fun PatientInfoScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         Text(
-            text = "Step 1: Patient Info",
+            text = "👶 Step 1: Patient Info",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )

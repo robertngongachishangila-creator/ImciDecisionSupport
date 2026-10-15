@@ -1,14 +1,21 @@
 package com.unza.imci.decisionsupport.data.model
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /**
  * Represents a single IMCI assessment stored locally in SQLite.
  * Aligns with proposal Objective 4: "offline-first local storage for patient assessments"
  * and Ethical Considerations: "anonymized identifiers, no cloud transmission".
+ * The individual classifications are stored in [ClassificationEntity]; [classification] and
+ * [treatmentRecommendation] hold a combined summary for quick display in lists.
+ * Indexed on patientId and timestamp (proposal Risk Analysis: efficient database indexing).
  */
-@Entity(tableName = "assessments")
+@Entity(
+    tableName = "assessments",
+    indices = [Index("patientId"), Index("timestamp")]
+)
 data class AssessmentEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
