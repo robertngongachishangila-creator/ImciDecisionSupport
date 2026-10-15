@@ -26,13 +26,18 @@ data class PatientAssessment(
     val hasDiarrhoea: Boolean = false,
     val diarrhoeaDurationDays: Int? = null,
     val bloodInStool: Boolean = false,
-    val skinPinchGoesBackSlowly: Boolean = false,
+    val restlessOrIrritable: Boolean = false,
     val sunkenEyes: Boolean = false,
-    val veryThirstyOrDrinksPoorly: Boolean = false,
+    val drinkingPoorly: Boolean = false,          // "Not able to drink or drinking poorly" (severe sign)
+    val drinksEagerlyThirsty: Boolean = false,    // "Drinks eagerly, thirsty" (some-dehydration sign)
+    val skinPinchGoesBackSlowly: Boolean = false,
+    val skinPinchGoesBackVerySlowly: Boolean = false,
 
     // Fever
     val hasFever: Boolean = false,
     val feverDurationDays: Int? = null,
+    val malariaRiskArea: Boolean = true,          // All of Zambia is classed as a malaria risk area
+    val malariaTestResult: MalariaTestResult = MalariaTestResult.NOT_DONE,
     val stiffNeck: Boolean = false,
     val runnyNose: Boolean = false,
     val measles: Boolean = false,
@@ -51,6 +56,9 @@ data class PatientAssessment(
     val visibleSevereWasting: Boolean = false,
     val bilateralPittingOedema: Boolean = false,
     val muacCm: Float? = null,
-    val palePalms: Boolean = false
+    val somePalmarPallor: Boolean = false,
+    val severePalmarPallor: Boolean = false
 )
 
+/** Result of a malaria rapid diagnostic test (RDT), if one was done. */
+enum class MalariaTestResult { POSITIVE, NEGATIVE, NOT_DONE }

@@ -3,7 +3,9 @@ package com.unza.imci.decisionsupport.data.database
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import com.unza.imci.decisionsupport.data.model.AssessmentEntity
+import com.unza.imci.decisionsupport.data.model.ClassificationEntity
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -22,6 +24,23 @@ interface AssessmentDao {
     @Insert
     suspend fun insertAssessment(assessment: AssessmentEntity): Long
 
+    @Insert
+    suspend fun insertClassifications(classifications: List<ClassificationEntity>)
+
+    /**
+     * Saves an assessment together with all of its classifications atomically,
+     * so a record is never stored without its results.
+     */
+    @Transaction
+    suspend fun insertAssessmentWithClassifications(
+        assessment: AssessmentEntity,
+        classifications: List<ClassificationEntity>
+    ): Long {
+        val assessmentId = insertAssessment(assessment)
+        insertClassifications(classifications.map { it.copy(assessmentId = assessmentId.toInt()) })
+        return assessmentId
+    }
+
     /**
      * Retrieve all assessments stored locally.
      * Returns assessments ordered by most recent first.
@@ -37,23 +56,50 @@ interface AssessmentDao {
     suspend fun getAssessmentById(assessmentId: Int): AssessmentEntity?
 
     /**
+     * Retrieve all classifications for one assessment, most severe (pink) first.
+     */
+    @Query(
+        "SELECT * FROM classifications WHERE assessmentId = :assessmentId ORDER BY " +
+            "CASE severity WHEN 'SEVERE' THEN 0 WHEN 'MODERATE' THEN 1 ELSE 2 END, id"
+    )
+    suspend fun getClassificationsForAssessment(assessmentId: Int): List<ClassificationEntity>
+
+    /**
      * Retrieve assessments for a specific patient (by anonymized ID).
      * Enables continuity of care for returning patients.
      */
     @Query("SELECT * FROM assessments WHERE patientId = :patientId ORDER BY timestamp DESC")
     suspend fun getAssessmentsByPatientId(patientId: String): List<AssessmentEntity>
 
-    /**
-     * Delete a specific assessment.
-     * Used for data management or correcting entry errors.
-     */
+    @Query("DELETE FROM classifications WHERE assessmentId = :assessmentId")
+    suspend fun deleteClassificationsForAssessment(assessmentId: Int)
+
     @Query("DELETE FROM assessments WHERE id = :assessmentId")
-    suspend fun deleteAssessment(assessmentId: Int)
+    suspend fun deleteAssessmentRow(assessmentId: Int)
+
+    /**
+     * Delete a specific assessment and its classifications.
+     * Used for data management or correcting entry errors.
+     * Child rows are removed explicitly rather than relying on SQLite foreign-key enforcement.
+     */
+    @Transaction
+    suspend fun deleteAssessment(assessmentId: Int) {
+        deleteClassificationsForAssessment(assessmentId)
+        deleteAssessmentRow(assessmentId)
+    }
+
+    @Query("DELETE FROM classifications")
+    suspend fun deleteAllClassifications()
+
+    @Query("DELETE FROM assessments")
+    suspend fun deleteAllAssessmentRows()
 
     /**
      * Delete all assessments (for testing or data cleanup).
      */
-    @Query("DELETE FROM assessments")
-    suspend fun deleteAllAssessments()
+    @Transaction
+    suspend fun deleteAllAssessments() {
+        deleteAllClassifications()
+        deleteAllAssessmentRows()
+    }
 }
-

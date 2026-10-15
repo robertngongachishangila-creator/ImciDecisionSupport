@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.unza.imci.decisionsupport.data.model.AssessmentEntity
+import com.unza.imci.decisionsupport.data.model.ClassificationEntity
 import com.unza.imci.decisionsupport.data.security.PinManager
 import com.unza.imci.decisionsupport.ui.screens.*
 import com.unza.imci.decisionsupport.ui.theme.ImciDecisionSupportTheme
@@ -35,6 +36,7 @@ class MainActivity : ComponentActivity() {
                         mutableStateOf(if (PinManager.isPinSet(context)) "pin_entry" else "pin_setup")
                     }
                     var selectedAssessment by remember { mutableStateOf<AssessmentEntity?>(null) }
+                    var selectedClassifications by remember { mutableStateOf(listOf<ClassificationEntity>()) }
 
                     val viewModel: AssessmentViewModel = viewModel()
 
@@ -64,6 +66,7 @@ class MainActivity : ComponentActivity() {
                             "malnutrition" -> "ear"
                             "classification" -> "malnutrition"
                             "history" -> "home"
+                            "guide" -> "home"
                             "detail" -> "history"
                             else -> currentScreen // home, pin_setup, pin_entry: handled below
                         }
@@ -103,7 +106,8 @@ class MainActivity : ComponentActivity() {
                                 viewModel.resetForm()
                                 currentScreen = "patient_info"
                             },
-                            onViewHistory = { currentScreen = "history" }
+                            onViewHistory = { currentScreen = "history" },
+                            onOpenGuide = { currentScreen = "guide" }
                         )
                         "patient_info" -> PatientInfoScreen(
                             viewModel = viewModel,
@@ -160,8 +164,11 @@ class MainActivity : ComponentActivity() {
                             assessments = allAssessments,
                             onBack = { navigateBack() },
                             onItemClick = { assessment ->
-                                selectedAssessment = assessment
-                                currentScreen = "detail"
+                                scope.launch {
+                                    selectedAssessment = assessment
+                                    selectedClassifications = viewModel.getClassifications(assessment.id)
+                                    currentScreen = "detail"
+                                }
                             },
                             onDeleteAssessment = { assessment ->
                                 scope.launch {
@@ -173,9 +180,11 @@ class MainActivity : ComponentActivity() {
                         "detail" -> selectedAssessment?.let { assessment ->
                             AssessmentDetailScreen(
                                 assessment = assessment,
+                                classifications = selectedClassifications,
                                 onBack = { navigateBack() }
                             )
                         }
+                        "guide" -> UserGuideScreen(onBack = { navigateBack() })
                     }
                 }
             }

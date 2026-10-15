@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.unza.imci.decisionsupport.ui.components.DisclaimerNote
 import com.unza.imci.decisionsupport.ui.theme.IMCIBackground
 import com.unza.imci.decisionsupport.ui.theme.IMCIPrimary
 import com.unza.imci.decisionsupport.ui.theme.IMCISecondary
@@ -26,7 +28,8 @@ import com.unza.imci.decisionsupport.ui.theme.IMCISecondary
 @Composable
 fun HomeScreen(
     onNewAssessment: () -> Unit,
-    onViewHistory: () -> Unit
+    onViewHistory: () -> Unit,
+    onOpenGuide: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -62,7 +65,7 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "New Assessment",
+                    text = "🩺 New Assessment",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -85,11 +88,28 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "View History",
+                    text = "📋 View History",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold
                 )
             }
         }
+
+        // User Guide Button
+        OutlinedButton(
+            onClick = onOpenGuide,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp)
+                .height(72.dp)
+        ) {
+            Text(
+                text = "📖 User Guide",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+
+        DisclaimerNote(modifier = Modifier.padding(top = 32.dp))
     }
 }

@@ -6,6 +6,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.unza.imci.decisionsupport.data.database.AppDatabase
 import com.unza.imci.decisionsupport.data.database.AssessmentDao
 import com.unza.imci.decisionsupport.data.model.AssessmentEntity
+import com.unza.imci.decisionsupport.data.model.ClassificationEntity
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -79,5 +80,36 @@ class AssessmentDaoTest {
         val afterDelete = dao.getAllAssessments().first()
 
         assertTrue("Database should be empty after deletion", afterDelete.isEmpty())
+    }
+
+    @Test
+    fun testInsertAssessmentWithClassifications_returnedMostSevereFirst() = runBlocking {
+        val id = dao.insertAssessmentWithClassifications(
+            AssessmentEntity(
+                patientId = "TEST_003",
+                assessmentJson = "{}",
+                classification = "COUGH OR COLD + SEVERE DEHYDRATION",
+                treatmentRecommendation = "..."
+            ),
+            listOf(
+                ClassificationEntity(assessmentId = 0, module = "RESPIRATORY", title = "COUGH OR COLD", treatment = "Soothe throat", severity = "MILD"),
+                ClassificationEntity(assessmentId = 0, module = "DIARRHOEA", title = "SEVERE DEHYDRATION", treatment = "Refer urgently", severity = "SEVERE")
+            )
+        )
+
+        val stored = dao.getClassificationsForAssessment(id.toInt())
+        assertEquals(listOf("SEVERE DEHYDRATION", "COUGH OR COLD"), stored.map { it.title })
+    }
+
+    @Test
+    fun testDeleteAssessment_alsoDeletesItsClassifications() = runBlocking {
+        val id = dao.insertAssessmentWithClassifications(
+            AssessmentEntity(patientId = "TEST_004", assessmentJson = "{}", classification = "MALARIA", treatmentRecommendation = "..."),
+            listOf(ClassificationEntity(assessmentId = 0, module = "FEVER", title = "MALARIA", treatment = "Antimalarial", severity = "MODERATE"))
+        ).toInt()
+
+        dao.deleteAssessment(id)
+
+        assertTrue(dao.getClassificationsForAssessment(id).isEmpty())
     }
 }

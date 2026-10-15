@@ -10,10 +10,14 @@ import androidx.lifecycle.viewModelScope
 import com.unza.imci.decisionsupport.data.database.AppDatabase
 import com.unza.imci.decisionsupport.data.repository.AssessmentRepository
 import com.unza.imci.decisionsupport.data.model.AssessmentEntity
+import com.unza.imci.decisionsupport.data.model.ClassificationEntity
+import com.unza.imci.decisionsupport.data.model.MalariaTestResult
 import com.unza.imci.decisionsupport.data.model.PatientAssessment
+import com.unza.imci.decisionsupport.domain.decision_engine.AssessmentResult
 import com.unza.imci.decisionsupport.domain.decision_engine.ImciDecisionEngine
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 
 class AssessmentViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -41,11 +45,18 @@ class AssessmentViewModel(application: Application) : AndroidViewModel(applicati
     var hasDiarrhoea by mutableStateOf(false)
     var diarrhoeaDurationDays by mutableIntStateOf(0)
     var bloodInStool by mutableStateOf(false)
+    var restlessOrIrritable by mutableStateOf(false)
     var sunkenEyes by mutableStateOf(false)
+    var drinkingPoorly by mutableStateOf(false)
+    var drinksEagerlyThirsty by mutableStateOf(false)
+    var skinPinchSlowly by mutableStateOf(false)
+    var skinPinchVerySlowly by mutableStateOf(false)
 
     // 5. Fever
     var hasFever by mutableStateOf(false)
     var feverDurationDays by mutableIntStateOf(0)
+    var malariaRiskArea by mutableStateOf(true)
+    var malariaTestResult by mutableStateOf(MalariaTestResult.NOT_DONE)
     var stiffNeck by mutableStateOf(false)
     var runnyNose by mutableStateOf(false)
     var measles by mutableStateOf(false)
@@ -64,106 +75,144 @@ class AssessmentViewModel(application: Application) : AndroidViewModel(applicati
     var visibleSevereWasting by mutableStateOf(false)
     var bilateralPittingOedema by mutableStateOf(false)
     var muacCm by mutableStateOf("")
-    var palePalms by mutableStateOf(false)
+    var somePalmarPallor by mutableStateOf(false)
+    var severePalmarPallor by mutableStateOf(false)
 
     // 8. Classification Results
-    var classificationTitle by mutableStateOf("")
-    var treatmentText by mutableStateOf("")
+    var result by mutableStateOf<AssessmentResult?>(null)
+        private set
+    var isSaved by mutableStateOf(false)
+        private set
+
+    private fun buildPatientAssessment() = PatientAssessment(
+        patientId = patientId,
+        ageInMonths = ageInMonths,
+        cannotDrinkOrBreastfeed = cannotDrink,
+        vomitsEverything = vomitsEverything,
+        convulsions = convulsions,
+        lethargicOrUnconscious = lethargic,
+        hasCough = hasCough,
+        breathingRatePerMin = if (breathingRate == 0) null else breathingRate,
+        chestIndrawing = chestIndrawing,
+        hasDifficultBreathing = hasDifficultBreathing,
+        stridorInCalmChild = stridorInCalmChild,
+        hasDiarrhoea = hasDiarrhoea,
+        diarrhoeaDurationDays = if (diarrhoeaDurationDays == 0) null else diarrhoeaDurationDays,
+        bloodInStool = bloodInStool,
+        restlessOrIrritable = restlessOrIrritable,
+        sunkenEyes = sunkenEyes,
+        drinkingPoorly = drinkingPoorly,
+        drinksEagerlyThirsty = drinksEagerlyThirsty,
+        skinPinchGoesBackSlowly = skinPinchSlowly,
+        skinPinchGoesBackVerySlowly = skinPinchVerySlowly,
+        hasFever = hasFever,
+        feverDurationDays = if (feverDurationDays == 0) null else feverDurationDays,
+        malariaRiskArea = malariaRiskArea,
+        malariaTestResult = malariaTestResult,
+        stiffNeck = stiffNeck,
+        runnyNose = runnyNose,
+        measles = measles,
+        cloudingOfCornea = cloudingOfCornea,
+        deepOrExtensiveMouthUlcers = deepOrExtensiveMouthUlcers,
+        mouthUlcers = mouthUlcers,
+        pusDrainingFromEye = pusDrainingFromEye,
+        hasEarPain = hasEarPain,
+        earDischarge = earDischarge,
+        earDischargeDurationDays = if (earDischargeDurationDays == 0) null else earDischargeDurationDays,
+        tenderSwellingBehindEar = tenderSwellingBehindEar,
+        visibleSevereWasting = visibleSevereWasting,
+        bilateralPittingOedema = bilateralPittingOedema,
+        muacCm = muacCm.toFloatOrNull(),
+        somePalmarPallor = somePalmarPallor,
+        severePalmarPallor = severePalmarPallor
+    )
 
     fun calculateResults() {
-        val assessment = PatientAssessment(
-            patientId = patientId,
-            ageInMonths = ageInMonths,
-            cannotDrinkOrBreastfeed = cannotDrink,
-            vomitsEverything = vomitsEverything,
-            convulsions = convulsions,
-            lethargicOrUnconscious = lethargic,
-            hasCough = hasCough,
-            breathingRatePerMin = if (breathingRate == 0) null else breathingRate,
-            chestIndrawing = chestIndrawing,
-            hasDifficultBreathing = hasDifficultBreathing,
-            stridorInCalmChild = stridorInCalmChild,
-            hasDiarrhoea = hasDiarrhoea,
-            diarrhoeaDurationDays = if (diarrhoeaDurationDays == 0) null else diarrhoeaDurationDays,
-            bloodInStool = bloodInStool,
-            sunkenEyes = sunkenEyes,
-            hasFever = hasFever,
-            feverDurationDays = if (feverDurationDays == 0) null else feverDurationDays,
-            stiffNeck = stiffNeck,
-            runnyNose = runnyNose,
-            measles = measles,
-            cloudingOfCornea = cloudingOfCornea,
-            deepOrExtensiveMouthUlcers = deepOrExtensiveMouthUlcers,
-            mouthUlcers = mouthUlcers,
-            pusDrainingFromEye = pusDrainingFromEye,
-            hasEarPain = hasEarPain,
-            earDischarge = earDischarge,
-            earDischargeDurationDays = if (earDischargeDurationDays == 0) null else earDischargeDurationDays,
-            tenderSwellingBehindEar = tenderSwellingBehindEar,
-            visibleSevereWasting = visibleSevereWasting,
-            bilateralPittingOedema = bilateralPittingOedema,
-            muacCm = muacCm.toFloatOrNull(),
-            palePalms = palePalms
-        )
-
-        val result = engine.assess(assessment)
-        classificationTitle = result.first
-        treatmentText = result.second
+        result = engine.assess(buildPatientAssessment())
+        isSaved = false
     }
 
     fun saveAssessment(onSuccess: () -> Unit) {
+        val currentResult = result ?: return
+        if (isSaved) return
+        isSaved = true // Set before launching so a double tap cannot save the record twice
+
         viewModelScope.launch {
-            repository.saveAssessment(AssessmentEntity(
-                patientId = patientId,
-                classification = classificationTitle,
-                treatmentRecommendation = treatmentText,
-                assessmentJson = buildAssessmentJson(),
-                timestamp = System.currentTimeMillis()
-            ))
+            repository.saveAssessment(
+                AssessmentEntity(
+                    patientId = patientId,
+                    classification = currentResult.titles.joinToString(" + "),
+                    treatmentRecommendation = currentResult.classifications.joinToString("\n") {
+                        "${it.title}: ${it.treatment}"
+                    },
+                    assessmentJson = buildAssessmentJson(),
+                    timestamp = System.currentTimeMillis()
+                ),
+                currentResult.classifications.map {
+                    ClassificationEntity(
+                        assessmentId = 0, // Assigned by the DAO once the assessment row exists
+                        module = it.module.name,
+                        title = it.title,
+                        treatment = it.treatment,
+                        severity = it.severity.name
+                    )
+                }
+            )
             onSuccess()
         }
     }
 
     private fun buildAssessmentJson(): String {
-        return """
-            {
-              "ageInMonths": $ageInMonths,
-              "cannotDrink": $cannotDrink,
-              "vomitsEverything": $vomitsEverything,
-              "convulsions": $convulsions,
-              "lethargic": $lethargic,
-              "hasCough": $hasCough,
-              "breathingRate": $breathingRate,
-              "chestIndrawing": $chestIndrawing,
-              "hasDifficultBreathing": $hasDifficultBreathing,
-              "stridorInCalmChild": $stridorInCalmChild,
-              "hasDiarrhoea": $hasDiarrhoea,
-              "diarrhoeaDurationDays": $diarrhoeaDurationDays,
-              "bloodInStool": $bloodInStool,
-              "sunkenEyes": $sunkenEyes,
-              "hasFever": $hasFever,
-              "feverDurationDays": $feverDurationDays,
-              "stiffNeck": $stiffNeck,
-              "runnyNose": $runnyNose,
-              "measles": $measles,
-              "cloudingOfCornea": $cloudingOfCornea,
-              "deepOrExtensiveMouthUlcers": $deepOrExtensiveMouthUlcers,
-              "mouthUlcers": $mouthUlcers,
-              "pusDrainingFromEye": $pusDrainingFromEye,
-              "hasEarPain": $hasEarPain,
-              "earDischarge": $earDischarge,
-              "earDischargeDurationDays": $earDischargeDurationDays,
-              "tenderSwellingBehindEar": $tenderSwellingBehindEar,
-              "visibleSevereWasting": $visibleSevereWasting,
-              "bilateralPittingOedema": $bilateralPittingOedema,
-              "muacCm": ${muacCm.toFloatOrNull()},
-              "palePalms": $palePalms
-            }
-        """.trimIndent()
+        val a = buildPatientAssessment()
+        return JSONObject()
+            .put("ageInMonths", a.ageInMonths)
+            .put("cannotDrinkOrBreastfeed", a.cannotDrinkOrBreastfeed)
+            .put("vomitsEverything", a.vomitsEverything)
+            .put("convulsions", a.convulsions)
+            .put("lethargicOrUnconscious", a.lethargicOrUnconscious)
+            .put("hasCough", a.hasCough)
+            .put("hasDifficultBreathing", a.hasDifficultBreathing)
+            .put("breathingRatePerMin", a.breathingRatePerMin ?: JSONObject.NULL)
+            .put("chestIndrawing", a.chestIndrawing)
+            .put("stridorInCalmChild", a.stridorInCalmChild)
+            .put("hasDiarrhoea", a.hasDiarrhoea)
+            .put("diarrhoeaDurationDays", a.diarrhoeaDurationDays ?: JSONObject.NULL)
+            .put("bloodInStool", a.bloodInStool)
+            .put("restlessOrIrritable", a.restlessOrIrritable)
+            .put("sunkenEyes", a.sunkenEyes)
+            .put("drinkingPoorly", a.drinkingPoorly)
+            .put("drinksEagerlyThirsty", a.drinksEagerlyThirsty)
+            .put("skinPinchGoesBackSlowly", a.skinPinchGoesBackSlowly)
+            .put("skinPinchGoesBackVerySlowly", a.skinPinchGoesBackVerySlowly)
+            .put("hasFever", a.hasFever)
+            .put("feverDurationDays", a.feverDurationDays ?: JSONObject.NULL)
+            .put("malariaRiskArea", a.malariaRiskArea)
+            .put("malariaTestResult", a.malariaTestResult.name)
+            .put("stiffNeck", a.stiffNeck)
+            .put("runnyNose", a.runnyNose)
+            .put("measles", a.measles)
+            .put("cloudingOfCornea", a.cloudingOfCornea)
+            .put("deepOrExtensiveMouthUlcers", a.deepOrExtensiveMouthUlcers)
+            .put("mouthUlcers", a.mouthUlcers)
+            .put("pusDrainingFromEye", a.pusDrainingFromEye)
+            .put("hasEarPain", a.hasEarPain)
+            .put("earDischarge", a.earDischarge)
+            .put("earDischargeDurationDays", a.earDischargeDurationDays ?: JSONObject.NULL)
+            .put("tenderSwellingBehindEar", a.tenderSwellingBehindEar)
+            .put("visibleSevereWasting", a.visibleSevereWasting)
+            .put("bilateralPittingOedema", a.bilateralPittingOedema)
+            .put("muacCm", a.muacCm?.toDouble() ?: JSONObject.NULL)
+            .put("somePalmarPallor", a.somePalmarPallor)
+            .put("severePalmarPallor", a.severePalmarPallor)
+            .toString(2)
     }
 
     fun getAllAssessments(): Flow<List<AssessmentEntity>> {
         return repository.getAllAssessments()
+    }
+
+    suspend fun getClassifications(assessmentId: Int): List<ClassificationEntity> {
+        return repository.getClassifications(assessmentId)
     }
 
     suspend fun deleteAssessment(assessment: AssessmentEntity) {
@@ -189,9 +238,16 @@ class AssessmentViewModel(application: Application) : AndroidViewModel(applicati
         hasDiarrhoea = false
         diarrhoeaDurationDays = 0
         bloodInStool = false
+        restlessOrIrritable = false
         sunkenEyes = false
+        drinkingPoorly = false
+        drinksEagerlyThirsty = false
+        skinPinchSlowly = false
+        skinPinchVerySlowly = false
         hasFever = false
         feverDurationDays = 0
+        malariaRiskArea = true
+        malariaTestResult = MalariaTestResult.NOT_DONE
         stiffNeck = false
         runnyNose = false
         measles = false
@@ -206,8 +262,9 @@ class AssessmentViewModel(application: Application) : AndroidViewModel(applicati
         visibleSevereWasting = false
         bilateralPittingOedema = false
         muacCm = ""
-        palePalms = false
-        classificationTitle = ""
-        treatmentText = ""
+        somePalmarPallor = false
+        severePalmarPallor = false
+        result = null
+        isSaved = false
     }
 }

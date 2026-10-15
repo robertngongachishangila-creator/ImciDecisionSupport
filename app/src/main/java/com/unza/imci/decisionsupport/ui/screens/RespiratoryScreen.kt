@@ -36,7 +36,7 @@ fun RespiratoryScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         Text(
-            text = "Step 3: Respiratory Assessment",
+            text = "🌬️ Step 3: Respiratory Assessment",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Black

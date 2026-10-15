@@ -36,7 +36,7 @@ fun DangerSignsScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         Text(
-            text = "Step 2: Danger Signs",
+            text = "⚠️ Step 2: Danger Signs",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Black

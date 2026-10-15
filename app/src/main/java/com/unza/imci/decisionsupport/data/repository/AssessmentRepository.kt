@@ -2,6 +2,7 @@ package com.unza.imci.decisionsupport.data.repository
 
 import com.unza.imci.decisionsupport.data.database.AssessmentDao
 import com.unza.imci.decisionsupport.data.model.AssessmentEntity
+import com.unza.imci.decisionsupport.data.model.ClassificationEntity
 import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 
@@ -19,8 +20,9 @@ class AssessmentRepository(private val assessmentDao: AssessmentDao) {
      * Generates an anonymized ID for the patient to ensure privacy.
      *
      * @param assessment The AssessmentEntity to save.
+     * @param classifications Every IMCI classification the decision engine produced for it.
      */
-    suspend fun saveAssessment(assessment: AssessmentEntity) {
+    suspend fun saveAssessment(assessment: AssessmentEntity, classifications: List<ClassificationEntity>) {
         // If no patient ID is provided, generate an anonymous one
         val finalAssessment = if (assessment.patientId.isBlank()) {
             assessment.copy(patientId = "ANON_${UUID.randomUUID().toString().take(8)}")
@@ -28,7 +30,14 @@ class AssessmentRepository(private val assessmentDao: AssessmentDao) {
             assessment
         }
 
-        assessmentDao.insertAssessment(finalAssessment)
+        assessmentDao.insertAssessmentWithClassifications(finalAssessment, classifications)
+    }
+
+    /**
+     * Retrieves all classifications for a saved assessment, most severe first.
+     */
+    suspend fun getClassifications(assessmentId: Int): List<ClassificationEntity> {
+        return assessmentDao.getClassificationsForAssessment(assessmentId)
     }
 
     /**
