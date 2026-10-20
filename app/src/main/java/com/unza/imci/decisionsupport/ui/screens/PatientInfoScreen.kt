@@ -54,7 +54,7 @@ fun PatientInfoScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Years", fontSize = 14.sp, color = Color.DarkGray)
+                        Text("Years", fontSize = 14.sp, color = Color.Black)
                         OutlinedTextField(
                             value = yearsInput,
                             onValueChange = {
@@ -66,7 +66,7 @@ fun PatientInfoScreen(
                         )
                     }
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Months", fontSize = 14.sp, color = Color.DarkGray)
+                        Text("Months", fontSize = 14.sp, color = Color.Black)
                         OutlinedTextField(
                             value = monthsInput,
                             onValueChange = {

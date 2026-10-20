@@ -61,8 +61,8 @@ fun AssessmentDetailScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("ID: ${assessment.patientId.ifEmpty { "Anonymous" }}", fontSize = 16.sp, color = Color.DarkGray)
-            Text(formattedDate, fontSize = 14.sp, color = Color.Gray)
+            Text("ID: ${assessment.patientId.ifEmpty { "Anonymous" }}", fontSize = 16.sp, color = Color.Black)
+            Text(formattedDate, fontSize = 14.sp, color = Color.Black)
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -106,9 +106,9 @@ fun AssessmentDetailScreen(
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
                 if (findings.isEmpty()) {
-                    Text("No signs recorded.", fontSize = 16.sp, color = Color.DarkGray)
+                    Text("No signs recorded.", fontSize = 16.sp, color = Color.Black)
                 } else {
-                    findings.forEach { Text("• $it", fontSize = 16.sp, color = Color.DarkGray) }
+                    findings.forEach { Text("• $it", fontSize = 16.sp, color = Color.Black) }
                 }
             }
         }

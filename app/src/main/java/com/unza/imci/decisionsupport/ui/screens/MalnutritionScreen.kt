@@ -69,7 +69,7 @@ fun MalnutritionScreen(
                         Text(
                             "MUAC is not measured for children under 6 months.",
                             fontSize = 13.sp,
-                            color = Color.DarkGray
+                            color = Color.Black
                         )
                     }
 

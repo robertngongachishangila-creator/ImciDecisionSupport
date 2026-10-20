@@ -79,7 +79,7 @@ fun DiarrhoeaScreen(
                         Text(
                             "Lethargic / unconscious and not able to drink are taken from the danger signs step.",
                             fontSize = 13.sp,
-                            color = Color.DarkGray
+                            color = Color.Black
                         )
                         CheckboxWithLabel("Restless or irritable", viewModel.restlessOrIrritable) { viewModel.restlessOrIrritable = it }
                         CheckboxWithLabel("Sunken eyes", viewModel.sunkenEyes) { viewModel.sunkenEyes = it }

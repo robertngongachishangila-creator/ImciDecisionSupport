@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.unza.imci.decisionsupport.data.model.AssessmentEntity
@@ -27,7 +28,10 @@ class MainActivity : ComponentActivity() {
             ImciDecisionSupportTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.background,
+                    // Every screen paints a light background, so default text must be black;
+                    // the theme's content colour turns light grey in dark mode / dynamic colour.
+                    contentColor = Color.Black
                 ) {
                     val context = LocalContext.current
                     val scope = rememberCoroutineScope()
