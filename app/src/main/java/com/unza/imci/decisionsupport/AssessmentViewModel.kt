@@ -9,9 +9,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.unza.imci.decisionsupport.data.database.AppDatabase
 import com.unza.imci.decisionsupport.data.repository.AssessmentRepository
+import com.unza.imci.decisionsupport.data.model.AppetiteTestResult
 import com.unza.imci.decisionsupport.data.model.AssessmentEntity
 import com.unza.imci.decisionsupport.data.model.ClassificationEntity
 import com.unza.imci.decisionsupport.data.model.MalariaTestResult
+import com.unza.imci.decisionsupport.data.model.MuacInput
 import com.unza.imci.decisionsupport.data.model.PatientAssessment
 import com.unza.imci.decisionsupport.domain.decision_engine.AssessmentResult
 import com.unza.imci.decisionsupport.domain.decision_engine.ImciDecisionEngine
@@ -72,9 +74,9 @@ class AssessmentViewModel(application: Application) : AndroidViewModel(applicati
     var tenderSwellingBehindEar by mutableStateOf(false)
 
     // 7. Malnutrition / Anaemia
-    var visibleSevereWasting by mutableStateOf(false)
     var bilateralPittingOedema by mutableStateOf(false)
     var muacCm by mutableStateOf("")
+    var appetiteTest by mutableStateOf(AppetiteTestResult.NOT_DONE)
     var somePalmarPallor by mutableStateOf(false)
     var severePalmarPallor by mutableStateOf(false)
 
@@ -120,9 +122,9 @@ class AssessmentViewModel(application: Application) : AndroidViewModel(applicati
         earDischarge = earDischarge,
         earDischargeDurationDays = if (earDischargeDurationDays == 0) null else earDischargeDurationDays,
         tenderSwellingBehindEar = tenderSwellingBehindEar,
-        visibleSevereWasting = visibleSevereWasting,
         bilateralPittingOedema = bilateralPittingOedema,
-        muacCm = muacCm.toFloatOrNull(),
+        muacCm = MuacInput.parseCm(muacCm),
+        appetiteTest = appetiteTest,
         somePalmarPallor = somePalmarPallor,
         severePalmarPallor = severePalmarPallor
     )
@@ -199,9 +201,9 @@ class AssessmentViewModel(application: Application) : AndroidViewModel(applicati
             .put("earDischarge", a.earDischarge)
             .put("earDischargeDurationDays", a.earDischargeDurationDays ?: JSONObject.NULL)
             .put("tenderSwellingBehindEar", a.tenderSwellingBehindEar)
-            .put("visibleSevereWasting", a.visibleSevereWasting)
             .put("bilateralPittingOedema", a.bilateralPittingOedema)
             .put("muacCm", a.muacCm?.toDouble() ?: JSONObject.NULL)
+            .put("appetiteTest", a.appetiteTest.name)
             .put("somePalmarPallor", a.somePalmarPallor)
             .put("severePalmarPallor", a.severePalmarPallor)
             .toString(2)
@@ -259,9 +261,9 @@ class AssessmentViewModel(application: Application) : AndroidViewModel(applicati
         earDischarge = false
         earDischargeDurationDays = 0
         tenderSwellingBehindEar = false
-        visibleSevereWasting = false
         bilateralPittingOedema = false
         muacCm = ""
+        appetiteTest = AppetiteTestResult.NOT_DONE
         somePalmarPallor = false
         severePalmarPallor = false
         result = null

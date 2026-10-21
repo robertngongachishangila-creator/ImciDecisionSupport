@@ -46,11 +46,11 @@ fun EarScreen(
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
                 CheckboxWithLabel("Ear pain", viewModel.hasEarPain) { viewModel.hasEarPain = it }
-                CheckboxWithLabel("Ear discharge (pus)", viewModel.earDischarge) { viewModel.earDischarge = it }
+                CheckboxWithLabel("Pus seen draining from the ear", viewModel.earDischarge) { viewModel.earDischarge = it }
 
                 if (viewModel.earDischarge) {
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Discharge duration (days)", fontWeight = FontWeight.Medium)
+                    Text("How many days has pus been draining?", fontWeight = FontWeight.Medium)
                     OutlinedTextField(
                         value = durationInput,
                         onValueChange = {

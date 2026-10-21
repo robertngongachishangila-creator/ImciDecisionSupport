@@ -20,13 +20,13 @@ to change an answer.
 
 | Step | What to do |
 |---|---|
-| 👶 1. Patient info | Enter the child's age in years and months. For the ID, use a code (e.g. P123), not the child's name. |
+| 👶 1. Patient info | Enter the child's age in years and months. The app is for children aged 2 months up to 5 years; for a younger or older child, follow the national guidelines. For the ID, use a code (e.g. P123), not the child's name. |
 | ⚠️ 2. Danger signs | Check these first: not able to drink or breastfeed, vomits everything, convulsions, lethargic or unconscious. |
 | 🌬️ 3. Cough or difficult breathing | Count breaths for one full minute while the child is calm. Look for chest indrawing and listen for stridor. |
 | 💧 4. Diarrhoea | Ask how many days and whether there is blood in the stool. Look and feel for dehydration: restless, sunken eyes, how the child drinks, skin pinch. |
 | 🌡️ 5. Fever | Ask how many days. Record the malaria test (RDT) result if one was done. Check for stiff neck and measles. |
-| 👂 6. Ear problem | Ask about ear pain and discharge (and for how many days). Feel for tender swelling behind the ear. |
-| 📏 7. Malnutrition and anaemia | Look for severe wasting and swelling of both feet. Measure MUAC (children 6 months and older). Look at the palms for pallor. |
+| 👂 6. Ear problem | Ask about ear pain. Look for pus draining from the ear and ask for how many days. Feel for tender swelling behind the ear. |
+| 📏 7. Malnutrition and anaemia | Look for swelling (oedema) of both feet. Measure MUAC (children 6 months and older). If there is oedema of both feet or MUAC is below 11.5 cm, record the result of the RUTF appetite test. Look at the palms for pallor. |
 
 ## 3. Reading the results
 

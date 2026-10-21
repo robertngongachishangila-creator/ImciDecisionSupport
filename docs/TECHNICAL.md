@@ -19,19 +19,25 @@ no network calls anywhere in this flow.
 
 ## 2. Decision engine
 
+The rules follow the WHO IMCI Chart Booklet (March 2014) for children aged 2 months up to
+5 years. `ImciScope` (2–59 months) defines this range, and the Patient info screen will not
+continue for an age outside it.
+
 `ImciDecisionEngine` runs every classifier for every child, because IMCI is an integrated
 assessment. It sorts the combined result by severity (pink, then yellow, then green). The sort
 is stable, so results of the same severity stay in IMCI assessment order. If nothing applies,
-the result is `NO SPECIFIC ILLNESS` (green).
+the result is `NO SPECIFIC ILLNESS` (green). The modules that are assessed for every child
+return a "no problem found" row (NO EAR INFECTION, NO ACUTE MALNUTRITION), so these rows are
+marked `isNoFinding` and a child whose only rows are these still gets NO SPECIFIC ILLNESS.
 
 | Classifier | Assessed when | Classifications (severity) |
 |---|---|---|
-| `DangerSignsClassifier` | Always | SEVERE GENERAL DISEASE (pink) if any general danger sign |
-| `RespiratoryClassifier` | Cough or difficult breathing | SEVERE PNEUMONIA (pink): danger sign, chest indrawing or stridor · PNEUMONIA (yellow): fast breathing (≥60 under 2 months, ≥50 at 2–11 months, ≥40 at 12–59 months) · COUGH OR COLD (green) |
+| `DangerSignsClassifier` | Always | VERY SEVERE DISEASE (pink) if any general danger sign |
+| `RespiratoryClassifier` | Cough or difficult breathing | SEVERE PNEUMONIA OR VERY SEVERE DISEASE (pink): danger sign or stridor in a calm child · PNEUMONIA (yellow): chest indrawing or fast breathing (≥50 at 2–11 months, ≥40 at 12–59 months); oral amoxicillin for 5 days, follow up in 3 days · COUGH OR COLD (green). Cough for more than 14 days: refer for assessment |
 | `DiarrhoeaClassifier` | Diarrhoea | Dehydration by the "two signs" rule: SEVERE DEHYDRATION (pink) · SOME DEHYDRATION (yellow) · NO DEHYDRATION (green). Also, 14 days or more: SEVERE PERSISTENT DIARRHOEA (pink, if dehydrated) or PERSISTENT DIARRHOEA (yellow). Also, blood in stool: DYSENTERY (yellow) |
-| `FeverClassifier` | Fever | VERY SEVERE FEBRILE DISEASE (pink): danger sign or stiff neck · MALARIA (yellow): RDT positive, or malaria risk area with no test, or no risk area and no other cause · FEVER: NO MALARIA (green): risk area, RDT negative · FEVER: MALARIA UNLIKELY (green): no risk area, runny nose or measles. Fever for more than 7 days adds "refer for assessment". Measles: SEVERE COMPLICATED MEASLES (pink) · MEASLES WITH EYE OR MOUTH COMPLICATIONS (yellow) · MEASLES (green) |
-| `EarClassifier` | Ear pain, discharge or swelling | MASTOIDITIS (pink) · CHRONIC EAR INFECTION (yellow): discharge 14 days or more · ACUTE EAR INFECTION (yellow) |
-| `NutritionClassifier` | Always | SEVERE ACUTE MALNUTRITION (pink): oedema of both feet, visible severe wasting or MUAC < 11.5 cm · MODERATE ACUTE MALNUTRITION (yellow): MUAC 11.5 to < 12.5 cm. MUAC is used only at age 6 months or older. SEVERE ANAEMIA (pink): severe palmar pallor · ANAEMIA (yellow): some palmar pallor |
+| `FeverClassifier` | Fever | VERY SEVERE FEBRILE DISEASE (pink): danger sign or stiff neck · MALARIA (yellow): RDT positive, or no test in a malaria risk area · FEVER: NO MALARIA (green): risk area, RDT negative · FEVER (green): no malaria risk area, with RDT negative or no test. A negative RDT never gives MALARIA. Fever for more than 7 days adds "refer for assessment". Measles: SEVERE COMPLICATED MEASLES (pink) · MEASLES WITH EYE OR MOUTH COMPLICATIONS (yellow) · MEASLES (green) |
+| `EarClassifier` | Always | MASTOIDITIS (pink): tender swelling behind the ear · CHRONIC EAR INFECTION (yellow): pus seen draining 14 days or more; topical quinolone ear drops for 14 days · ACUTE EAR INFECTION (yellow): ear pain, or pus draining under 14 days · NO EAR INFECTION (green) |
+| `NutritionClassifier` | Always | Severe acute malnutrition (SAM) signs: oedema of both feet or MUAC < 11.5 cm. Medical complication: any general danger sign, chest indrawing, stridor in a calm child, or any other severe (pink) classification for the same child, including SEVERE ANAEMIA (`ImciDecisionEngine` runs this classifier last and passes it the other modules' results). COMPLICATED SEVERE ACUTE MALNUTRITION (pink): oedema of both feet (always, as oedema appears only in the chart's pink row), or SAM signs with a medical complication, or an appetite test (RUTF) that was failed or not done · UNCOMPLICATED SEVERE ACUTE MALNUTRITION (yellow): MUAC < 11.5 cm without oedema, no medical complication, appetite test passed; RUTF, follow up in 14 days · MODERATE ACUTE MALNUTRITION (yellow): MUAC 11.5 to < 12.5 cm · NO ACUTE MALNUTRITION (green): MUAC 12.5 cm or more and no oedema. MUAC is used only at age 6 months or older; with no MUAC and no oedema there is no malnutrition classification. SEVERE ANAEMIA (pink): severe palmar pallor · ANAEMIA (yellow): some palmar pallor; if the child also has SAM, the treatment says not to give iron (child on therapeutic feeding) |
 
 **Verification status:** every rule must be cross-checked by the developer against the WHO
 IMCI Chart Booklet edition used in Zambia before the evaluation, as the proposal's AI

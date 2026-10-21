@@ -23,25 +23,27 @@ class ImciDecisionEngine {
         RespiratoryClassifier(),
         DiarrhoeaClassifier(),
         FeverClassifier(),
-        EarClassifier(),
-        NutritionClassifier()
+        EarClassifier()
     )
 
+    // Runs last: any severe classification from the other modules makes SAM complicated
+    private val nutritionClassifier = NutritionClassifier()
+
     fun assess(patient: PatientAssessment): AssessmentResult {
+        val others = classifiers.flatMap { it.classify(patient) }
         // sortedBy is stable, so within a severity level the IMCI assessment order is kept
-        val classifications = classifiers
-            .flatMap { it.classify(patient) }
+        val classifications = (others + nutritionClassifier.classify(patient, others))
             .sortedBy { it.severity.ordinal }
 
-        if (classifications.isEmpty()) {
+        // Modules that are assessed for every child return a "no problem found" row, so an
+        // empty list is not the only way a child can have nothing to treat.
+        if (classifications.all { it.isNoFinding }) {
             return AssessmentResult(
-                listOf(
-                    Classification(
-                        ImciModule.GENERAL,
-                        "NO SPECIFIC ILLNESS",
-                        "Counsel parent and give supportive care. Advise mother when to return immediately.",
-                        Severity.MILD
-                    )
+                classifications + Classification(
+                    ImciModule.GENERAL,
+                    "NO SPECIFIC ILLNESS",
+                    "Counsel parent and give supportive care. Advise mother when to return immediately.",
+                    Severity.MILD
                 )
             )
         }

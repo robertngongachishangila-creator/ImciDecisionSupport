@@ -1,5 +1,7 @@
 package com.unza.imci.decisionsupport.domain.decision_engine
 
+import com.unza.imci.decisionsupport.data.model.AppetiteTestResult
+import com.unza.imci.decisionsupport.data.model.ImciScope
 import com.unza.imci.decisionsupport.data.model.MalariaTestResult
 import com.unza.imci.decisionsupport.data.model.PatientAssessment
 import org.junit.Assert.assertEquals
@@ -11,7 +13,7 @@ import org.junit.Test
 /**
  * Local Unit Tests for the Decision Engine.
  * Validates WHO IMCI classification rules against the published Chart Booklet decision
- * tables (WHO, 2020), per the proposal's Evaluation Criteria: 50+ cases across all six
+ * tables (WHO, March 2014), per the proposal's Evaluation Criteria: 50+ cases across all six
  * modules, 8+ per module, exercising severity boundaries (severe / moderate-non-severe / none).
  * IMCI is integrated, so each case checks the classification(s) for its module and the
  * final section checks children with several illnesses at once.
@@ -44,40 +46,40 @@ class ImciDecisionEngineTest {
 
     @Test
     fun dangerSigns_cannotDrinkOrBreastfeed_isSevereGeneralDisease() {
-        assertClassifiedAs(PatientAssessment(ageInMonths = 10, cannotDrinkOrBreastfeed = true), "SEVERE GENERAL DISEASE")
+        assertClassifiedAs(PatientAssessment(ageInMonths = 10, cannotDrinkOrBreastfeed = true), "VERY SEVERE DISEASE")
     }
 
     @Test
     fun dangerSigns_vomitsEverything_isSevereGeneralDisease() {
-        assertClassifiedAs(PatientAssessment(ageInMonths = 8, vomitsEverything = true), "SEVERE GENERAL DISEASE")
+        assertClassifiedAs(PatientAssessment(ageInMonths = 8, vomitsEverything = true), "VERY SEVERE DISEASE")
     }
 
     @Test
     fun dangerSigns_convulsions_isSevereGeneralDisease() {
-        assertClassifiedAs(PatientAssessment(ageInMonths = 36, convulsions = true), "SEVERE GENERAL DISEASE")
+        assertClassifiedAs(PatientAssessment(ageInMonths = 36, convulsions = true), "VERY SEVERE DISEASE")
     }
 
     @Test
     fun dangerSigns_lethargicOrUnconscious_isSevereGeneralDisease() {
-        assertClassifiedAs(PatientAssessment(ageInMonths = 5, lethargicOrUnconscious = true), "SEVERE GENERAL DISEASE")
+        assertClassifiedAs(PatientAssessment(ageInMonths = 5, lethargicOrUnconscious = true), "VERY SEVERE DISEASE")
     }
 
     @Test
-    fun dangerSigns_withCough_alsoClassifiesSeverePneumonia() {
+    fun dangerSigns_withCough_alsoClassifiesSeverePneumoniaOrVerySevereDisease() {
         // A danger sign no longer hides the other modules: the child still gets a respiratory classification
         val patient = PatientAssessment(ageInMonths = 24, convulsions = true, hasCough = true)
-        assertClassifiedAs(patient, "SEVERE GENERAL DISEASE", "SEVERE PNEUMONIA")
+        assertClassifiedAs(patient, "VERY SEVERE DISEASE", "SEVERE PNEUMONIA OR VERY SEVERE DISEASE")
     }
 
     @Test
     fun dangerSigns_multipleSignsPresent_classifiedOnce() {
         val patient = PatientAssessment(ageInMonths = 18, vomitsEverything = true, convulsions = true, lethargicOrUnconscious = true)
-        assertEquals(1, titles(patient).count { it == "SEVERE GENERAL DISEASE" })
+        assertEquals(1, titles(patient).count { it == "VERY SEVERE DISEASE" })
     }
 
     @Test
     fun dangerSigns_none_notClassified() {
-        assertNotClassifiedAs(PatientAssessment(ageInMonths = 24, hasCough = true), "SEVERE GENERAL DISEASE")
+        assertNotClassifiedAs(PatientAssessment(ageInMonths = 24, hasCough = true), "VERY SEVERE DISEASE")
     }
 
     @Test
@@ -90,23 +92,48 @@ class ImciDecisionEngineTest {
     // ---------------------------------------------------------------------
 
     @Test
-    fun respiratory_chestIndrawing_isSeverePneumonia() {
-        assertClassifiedAs(PatientAssessment(ageInMonths = 18, hasCough = true, chestIndrawing = true), "SEVERE PNEUMONIA")
+    fun respiratory_chestIndrawing_isPneumonia() {
+        val patient = PatientAssessment(ageInMonths = 18, hasCough = true, chestIndrawing = true)
+        assertClassifiedAs(patient, "PNEUMONIA")
+        assertNotClassifiedAs(patient, "SEVERE PNEUMONIA OR VERY SEVERE DISEASE")
     }
 
     @Test
-    fun respiratory_stridorInCalmChild_isSeverePneumonia() {
-        assertClassifiedAs(PatientAssessment(ageInMonths = 18, hasDifficultBreathing = true, stridorInCalmChild = true), "SEVERE PNEUMONIA")
+    fun respiratory_stridorInCalmChild_isSeverePneumoniaOrVerySevereDisease() {
+        assertClassifiedAs(
+            PatientAssessment(ageInMonths = 18, hasDifficultBreathing = true, stridorInCalmChild = true),
+            "SEVERE PNEUMONIA OR VERY SEVERE DISEASE"
+        )
     }
 
     @Test
-    fun respiratory_fastBreathing_under2Months_thresholdIs60() {
-        assertClassifiedAs(PatientAssessment(ageInMonths = 1, hasCough = true, breathingRatePerMin = 60), "PNEUMONIA")
+    fun respiratory_fastBreathing_at2Months_thresholdIs50() {
+        assertClassifiedAs(PatientAssessment(ageInMonths = 2, hasCough = true, breathingRatePerMin = 50), "PNEUMONIA")
     }
 
     @Test
-    fun respiratory_belowThreshold_under2Months_isNotFastBreathing() {
-        assertClassifiedAs(PatientAssessment(ageInMonths = 1, hasCough = true, breathingRatePerMin = 59), "COUGH OR COLD")
+    fun respiratory_belowThreshold_at2Months_isNotFastBreathing() {
+        assertClassifiedAs(PatientAssessment(ageInMonths = 2, hasCough = true, breathingRatePerMin = 49), "COUGH OR COLD")
+    }
+
+    @Test
+    fun respiratory_fastBreathing_at11Months_thresholdIs50() {
+        assertClassifiedAs(PatientAssessment(ageInMonths = 11, hasCough = true, breathingRatePerMin = 50), "PNEUMONIA")
+    }
+
+    @Test
+    fun respiratory_belowThreshold_at11Months_isNotFastBreathing() {
+        assertClassifiedAs(PatientAssessment(ageInMonths = 11, hasCough = true, breathingRatePerMin = 49), "COUGH OR COLD")
+    }
+
+    @Test
+    fun respiratory_fastBreathing_at12Months_thresholdIs40() {
+        assertClassifiedAs(PatientAssessment(ageInMonths = 12, hasCough = true, breathingRatePerMin = 40), "PNEUMONIA")
+    }
+
+    @Test
+    fun respiratory_belowThreshold_at12Months_isNotFastBreathing() {
+        assertClassifiedAs(PatientAssessment(ageInMonths = 12, hasCough = true, breathingRatePerMin = 39), "COUGH OR COLD")
     }
 
     @Test
@@ -138,7 +165,7 @@ class ImciDecisionEngineTest {
     fun respiratory_noCoughOrDifficultBreathing_notAssessed() {
         assertNotClassifiedAs(
             PatientAssessment(ageInMonths = 24, breathingRatePerMin = 55),
-            "SEVERE PNEUMONIA", "PNEUMONIA", "COUGH OR COLD"
+            "SEVERE PNEUMONIA OR VERY SEVERE DISEASE", "PNEUMONIA", "COUGH OR COLD"
         )
     }
 
@@ -248,14 +275,27 @@ class ImciDecisionEngineTest {
     }
 
     @Test
-    fun fever_noRiskArea_runnyNose_isMalariaUnlikely() {
+    fun fever_noRiskArea_runnyNose_isFever() {
         val patient = PatientAssessment(ageInMonths = 24, hasFever = true, malariaRiskArea = false, runnyNose = true)
-        assertClassifiedAs(patient, "FEVER: MALARIA UNLIKELY")
+        assertClassifiedAs(patient, "FEVER")
     }
 
     @Test
-    fun fever_noRiskArea_noOtherCause_isMalaria() {
-        assertClassifiedAs(PatientAssessment(ageInMonths = 24, hasFever = true, malariaRiskArea = false), "MALARIA")
+    fun fever_noRiskArea_noTest_isFeverNotMalaria() {
+        // Chart row: no malaria risk and no travel to a malaria area -> FEVER (green)
+        val patient = PatientAssessment(ageInMonths = 24, hasFever = true, malariaRiskArea = false)
+        assertClassifiedAs(patient, "FEVER")
+        assertNotClassifiedAs(patient, "MALARIA")
+    }
+
+    @Test
+    fun fever_noRiskArea_rdtNegative_noOtherCause_isFever() {
+        // A negative RDT must never give MALARIA, even with no other cause of fever
+        val patient = PatientAssessment(
+            ageInMonths = 24, hasFever = true, malariaRiskArea = false, malariaTestResult = MalariaTestResult.NEGATIVE
+        )
+        assertClassifiedAs(patient, "FEVER")
+        assertNotClassifiedAs(patient, "MALARIA")
     }
 
     @Test
@@ -343,11 +383,11 @@ class ImciDecisionEngineTest {
     }
 
     @Test
-    fun ear_noEarSymptoms_notAssessed() {
-        assertNotClassifiedAs(
-            PatientAssessment(ageInMonths = 30),
-            "MASTOIDITIS", "CHRONIC EAR INFECTION", "ACUTE EAR INFECTION"
-        )
+    fun ear_noEarSigns_isNoEarInfection() {
+        val result = engine.assess(PatientAssessment(ageInMonths = 30))
+        val ear = result.classifications.single { it.module == ImciModule.EAR }
+        assertEquals("NO EAR INFECTION", ear.title)
+        assertEquals(Severity.MILD, ear.severity)
     }
 
     @Test
@@ -359,19 +399,81 @@ class ImciDecisionEngineTest {
     // 6. Malnutrition and Anaemia
     // ---------------------------------------------------------------------
 
+    private val malnutritionTitles = arrayOf(
+        "COMPLICATED SEVERE ACUTE MALNUTRITION", "UNCOMPLICATED SEVERE ACUTE MALNUTRITION",
+        "MODERATE ACUTE MALNUTRITION", "NO ACUTE MALNUTRITION"
+    )
+
+    private fun malnutrition(patient: PatientAssessment) =
+        engine.assess(patient).classifications.single { it.module == ImciModule.MALNUTRITION }
+
     @Test
-    fun malnutrition_visibleSevereWasting_isSevereAcuteMalnutrition() {
-        assertClassifiedAs(PatientAssessment(ageInMonths = 24, visibleSevereWasting = true), "SEVERE ACUTE MALNUTRITION")
+    fun malnutrition_oedemaAppetiteNotDone_isComplicatedSam() {
+        assertClassifiedAs(PatientAssessment(ageInMonths = 24, bilateralPittingOedema = true), "COMPLICATED SEVERE ACUTE MALNUTRITION")
     }
 
     @Test
-    fun malnutrition_bilateralPittingOedema_isSevereAcuteMalnutrition() {
-        assertClassifiedAs(PatientAssessment(ageInMonths = 24, bilateralPittingOedema = true), "SEVERE ACUTE MALNUTRITION")
+    fun malnutrition_muacBelow11point5AppetiteNotDone_isComplicatedSam() {
+        assertClassifiedAs(PatientAssessment(ageInMonths = 24, muacCm = 11.4f), "COMPLICATED SEVERE ACUTE MALNUTRITION")
     }
 
     @Test
-    fun malnutrition_muacBelow11point5_isSevereAcuteMalnutrition() {
-        assertClassifiedAs(PatientAssessment(ageInMonths = 24, muacCm = 11.4f), "SEVERE ACUTE MALNUTRITION")
+    fun malnutrition_samAppetiteFailed_isComplicatedSam() {
+        val result = malnutrition(PatientAssessment(ageInMonths = 24, muacCm = 11.0f, appetiteTest = AppetiteTestResult.FAILED))
+        assertEquals("COMPLICATED SEVERE ACUTE MALNUTRITION", result.title)
+        assertEquals(Severity.SEVERE, result.severity)
+    }
+
+    @Test
+    fun malnutrition_samAppetitePassedNoComplication_isUncomplicatedSam() {
+        val result = malnutrition(PatientAssessment(ageInMonths = 24, muacCm = 11.0f, appetiteTest = AppetiteTestResult.PASSED))
+        assertEquals("UNCOMPLICATED SEVERE ACUTE MALNUTRITION", result.title)
+        assertEquals(Severity.MODERATE, result.severity)
+    }
+
+    @Test
+    fun malnutrition_oedemaAppetitePassedNoComplication_isComplicatedSam() {
+        // Oedema of both feet appears only in the chart's pink row, so it is always complicated
+        val patient = PatientAssessment(ageInMonths = 24, bilateralPittingOedema = true, appetiteTest = AppetiteTestResult.PASSED)
+        assertEquals("COMPLICATED SEVERE ACUTE MALNUTRITION", malnutrition(patient).title)
+    }
+
+    @Test
+    fun malnutrition_samAppetiteNotDone_isComplicatedSam() {
+        val patient = PatientAssessment(ageInMonths = 24, muacCm = 11.0f, appetiteTest = AppetiteTestResult.NOT_DONE)
+        assertEquals("COMPLICATED SEVERE ACUTE MALNUTRITION", malnutrition(patient).title)
+    }
+
+    @Test
+    fun malnutrition_samAppetitePassedWithDangerSign_isComplicatedSam() {
+        val patient = PatientAssessment(
+            ageInMonths = 24, muacCm = 11.0f, appetiteTest = AppetiteTestResult.PASSED, vomitsEverything = true
+        )
+        assertEquals("COMPLICATED SEVERE ACUTE MALNUTRITION", malnutrition(patient).title)
+    }
+
+    @Test
+    fun malnutrition_samAppetitePassedWithSevereDehydration_isComplicatedSam() {
+        // A severe classification from another module counts as a medical complication
+        val patient = PatientAssessment(
+            ageInMonths = 24, muacCm = 11.0f, appetiteTest = AppetiteTestResult.PASSED,
+            hasDiarrhoea = true, sunkenEyes = true, skinPinchGoesBackVerySlowly = true
+        )
+        assertClassifiedAs(patient, "SEVERE DEHYDRATION", "COMPLICATED SEVERE ACUTE MALNUTRITION")
+    }
+
+    @Test
+    fun malnutrition_samAppetitePassedWithSevereAnaemia_isComplicatedSam() {
+        val patient = PatientAssessment(
+            ageInMonths = 24, muacCm = 11.0f, appetiteTest = AppetiteTestResult.PASSED, severePalmarPallor = true
+        )
+        assertClassifiedAs(patient, "SEVERE ANAEMIA", "COMPLICATED SEVERE ACUTE MALNUTRITION")
+    }
+
+    @Test
+    fun malnutrition_samAppetitePassedNothingElse_isUncomplicatedSam() {
+        val patient = PatientAssessment(ageInMonths = 24, muacCm = 11.0f, appetiteTest = AppetiteTestResult.PASSED)
+        assertEquals(listOf("UNCOMPLICATED SEVERE ACUTE MALNUTRITION", "NO EAR INFECTION"), titles(patient))
     }
 
     @Test
@@ -380,18 +482,35 @@ class ImciDecisionEngineTest {
     }
 
     @Test
-    fun malnutrition_muacAt12point5OrAbove_noOtherSigns_isNoSpecificIllness() {
-        assertEquals(listOf("NO SPECIFIC ILLNESS"), titles(PatientAssessment(ageInMonths = 24, muacCm = 12.5f)))
+    fun malnutrition_muacExactly12point5NoOedema_isNoAcuteMalnutrition() {
+        val result = malnutrition(PatientAssessment(ageInMonths = 24, muacCm = 12.5f))
+        assertEquals("NO ACUTE MALNUTRITION", result.title)
+        assertEquals(Severity.MILD, result.severity)
     }
 
     @Test
     fun malnutrition_muacIgnoredUnder6Months() {
-        assertNotClassifiedAs(PatientAssessment(ageInMonths = 4, muacCm = 11.0f), "SEVERE ACUTE MALNUTRITION")
+        assertNotClassifiedAs(PatientAssessment(ageInMonths = 4, muacCm = 11.0f), *malnutritionTitles)
     }
 
     @Test
     fun anaemia_somePalmarPallor_isAnaemia() {
         assertClassifiedAs(PatientAssessment(ageInMonths = 24, somePalmarPallor = true), "ANAEMIA")
+    }
+
+    private fun anaemiaTreatment(patient: PatientAssessment) =
+        engine.assess(patient).classifications.single { it.title == "ANAEMIA" }.treatment
+
+    @Test
+    fun anaemia_withoutSam_givesIron() {
+        assertTrue(anaemiaTreatment(PatientAssessment(ageInMonths = 24, somePalmarPallor = true)).startsWith("Give iron."))
+    }
+
+    @Test
+    fun anaemia_withSam_doesNotGiveIron() {
+        val treatment = anaemiaTreatment(PatientAssessment(ageInMonths = 24, muacCm = 11.0f, somePalmarPallor = true))
+        assertTrue(treatment.contains("Do not give iron to a child on therapeutic feeding."))
+        assertFalse(treatment.contains("Give iron"))
     }
 
     @Test
@@ -405,8 +524,32 @@ class ImciDecisionEngineTest {
     }
 
     @Test
-    fun malnutrition_noSignsAtAll_isNoSpecificIllness() {
-        assertEquals(listOf("NO SPECIFIC ILLNESS"), titles(PatientAssessment(ageInMonths = 24)))
+    fun malnutrition_noMuacAndNoOedema_notClassified() {
+        assertNotClassifiedAs(PatientAssessment(ageInMonths = 24), *malnutritionTitles)
+    }
+
+    // ---------------------------------------------------------------------
+    // Age scope: 2 months up to 5 years
+    // ---------------------------------------------------------------------
+
+    @Test
+    fun scope_1Month_isOutOfScope() {
+        assertFalse(ImciScope.isInScope(1))
+    }
+
+    @Test
+    fun scope_2Months_isInScope() {
+        assertTrue(ImciScope.isInScope(2))
+    }
+
+    @Test
+    fun scope_59Months_isInScope() {
+        assertTrue(ImciScope.isInScope(59))
+    }
+
+    @Test
+    fun scope_60Months_isOutOfScope() {
+        assertFalse(ImciScope.isInScope(60))
     }
 
     // ---------------------------------------------------------------------
@@ -438,7 +581,7 @@ class ImciDecisionEngineTest {
     @Test
     fun integrated_malnutritionSurfacesAlongsideOtherIllness() {
         val patient = PatientAssessment(ageInMonths = 24, hasEarPain = true, muacCm = 11.0f)
-        assertClassifiedAs(patient, "ACUTE EAR INFECTION", "SEVERE ACUTE MALNUTRITION")
+        assertClassifiedAs(patient, "ACUTE EAR INFECTION", "COMPLICATED SEVERE ACUTE MALNUTRITION")
     }
 
     @Test
@@ -453,7 +596,8 @@ class ImciDecisionEngineTest {
             ageInMonths = 24, hasCough = true, breathingRatePerMin = 45,
             hasFever = true, malariaTestResult = MalariaTestResult.POSITIVE
         )
-        assertEquals(listOf("PNEUMONIA", "MALARIA"), titles(patient))
+        // Ear is now assessed for every child, so the green NO EAR INFECTION follows the yellow results
+        assertEquals(listOf("PNEUMONIA", "MALARIA", "NO EAR INFECTION"), titles(patient))
     }
 
     @Test
@@ -463,8 +607,9 @@ class ImciDecisionEngineTest {
 
     @Test
     fun integrated_completelyHealthyChild_isNoSpecificIllness() {
+        // Only "no problem found" rows apply, so the child still gets the reassurance row
         val result = engine.assess(PatientAssessment(ageInMonths = 24, muacCm = 14.0f))
-        assertEquals(listOf("NO SPECIFIC ILLNESS"), result.titles)
-        assertEquals(Severity.MILD, result.classifications.single().severity)
+        assertEquals(listOf("NO EAR INFECTION", "NO ACUTE MALNUTRITION", "NO SPECIFIC ILLNESS"), result.titles)
+        assertTrue(result.classifications.all { it.severity == Severity.MILD })
     }
 }

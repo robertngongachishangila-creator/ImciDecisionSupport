@@ -10,7 +10,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.unza.imci.decisionsupport.AssessmentViewModel
+import com.unza.imci.decisionsupport.data.model.ImciScope
 import com.unza.imci.decisionsupport.ui.theme.IMCIBackground
+import com.unza.imci.decisionsupport.ui.theme.IMCIDanger
 import com.unza.imci.decisionsupport.ui.theme.IMCIPrimary
 
 @Composable
@@ -78,6 +80,17 @@ fun PatientInfoScreen(
                         )
                     }
                 }
+
+                val ageTyped = yearsInput.isNotBlank() || monthsInput.isNotBlank()
+                if (ageTyped && !ImciScope.isInScope(viewModel.ageInMonths)) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "This app is for children aged 2 months up to 5 years. For a younger or older " +
+                            "child, follow the national guidelines.",
+                        color = IMCIDanger,
+                        fontSize = 14.sp
+                    )
+                }
             }
         }
 
@@ -99,6 +112,7 @@ fun PatientInfoScreen(
 
         Button(
             onClick = onNext,
+            enabled = ImciScope.isInScope(viewModel.ageInMonths),
             modifier = Modifier.fillMaxWidth().height(56.dp),
             colors = ButtonDefaults.buttonColors(containerColor = IMCIPrimary)
         ) {

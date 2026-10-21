@@ -25,7 +25,13 @@ data class Classification(
     val module: ImciModule,
     val title: String,
     val treatment: String,
-    val severity: Severity
+    val severity: Severity,
+    /**
+     * True for a row that records the absence of a problem (NO EAR INFECTION, NO ACUTE
+     * MALNUTRITION) rather than something to do. A child whose only rows are these has no
+     * illness to treat, so [ImciDecisionEngine] still reports NO SPECIFIC ILLNESS.
+     */
+    val isNoFinding: Boolean = false
 )
 
 /**

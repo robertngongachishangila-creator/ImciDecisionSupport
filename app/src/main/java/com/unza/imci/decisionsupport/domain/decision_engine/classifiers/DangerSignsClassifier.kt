@@ -12,7 +12,8 @@ val PatientAssessment.hasGeneralDangerSign: Boolean
 
 /**
  * WHO IMCI Chart Booklet — "Check for general danger signs".
- * A child with any general danger sign needs URGENT attention and referral.
+ * A child with any general danger sign needs URGENT attention and referral. The chart calls this
+ * row VERY SEVERE DISEASE.
  */
 class DangerSignsClassifier : ImciClassifier {
     override fun classify(patient: PatientAssessment): List<Classification> {
@@ -20,7 +21,7 @@ class DangerSignsClassifier : ImciClassifier {
         return listOf(
             Classification(
                 ImciModule.DANGER_SIGNS,
-                "SEVERE GENERAL DISEASE",
+                "VERY SEVERE DISEASE",
                 "URGENT REFERRAL: Refer immediately to hospital. Complete the rest of the assessment " +
                     "quickly and give pre-referral treatment for any other severe classification.",
                 Severity.SEVERE

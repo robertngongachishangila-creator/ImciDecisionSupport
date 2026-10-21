@@ -17,8 +17,9 @@ import com.unza.imci.decisionsupport.domain.decision_engine.Severity
  *  - Malaria risk area: RDT positive or no test available    -> MALARIA
  *                       RDT negative                         -> FEVER: NO MALARIA
  *  - No malaria risk:   RDT positive                         -> MALARIA
- *                       runny nose or measles (other cause)  -> FEVER: MALARIA UNLIKELY
- *                       no other cause of fever              -> MALARIA
+ *                       RDT negative, or no test             -> FEVER
+ *  A negative RDT never gives MALARIA, and outside a malaria risk area an untested child is
+ *  never classified as malaria (chart row "no malaria risk and no travel to a malaria area").
  *  - Fever present every day for more than 7 days            -> add "refer for assessment"
  */
 class FeverClassifier : ImciClassifier {
@@ -45,10 +46,10 @@ class FeverClassifier : ImciClassifier {
             if ((patient.feverDurationDays ?: 0) > 7) " Fever every day for more than 7 days: refer for assessment." else ""
 
         val test = patient.malariaTestResult
-        val malaria = when {
-            test == MalariaTestResult.POSITIVE -> true
-            patient.malariaRiskArea -> test == MalariaTestResult.NOT_DONE
-            else -> !(patient.runnyNose || patient.measles)
+        val malaria = when (test) {
+            MalariaTestResult.POSITIVE -> true
+            MalariaTestResult.NEGATIVE -> false
+            MalariaTestResult.NOT_DONE -> patient.malariaRiskArea
         }
 
         return when {
@@ -69,7 +70,7 @@ class FeverClassifier : ImciClassifier {
             )
             else -> Classification(
                 ImciModule.FEVER,
-                "FEVER: MALARIA UNLIKELY",
+                "FEVER",
                 "Give paracetamol for high fever. Advise mother to return if fever persists beyond 2 days." +
                     prolongedFeverAdvice,
                 Severity.MILD

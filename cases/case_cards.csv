@@ -1,0 +1,75 @@
+case_id,module,age_months,signs,expected,booklet_row,notes
+# Case cards written from the WHO IMCI Chart Booklet (March 2014) ASSESS & CLASSIFY chart for
+# the sick child age 2 months up to 5 years. Each card records the child's age the signs and the
+# classification(s) the booklet gives. Cards were written from the chart rows before the engine
+# output was looked at; see cases/README.md for provenance and for the sign vocabulary.
+# expected lists every classification the booklet assigns separated by | ; - means none.
+# The no-finding rows NO EAR INFECTION and NO ACUTE MALNUTRITION record absence rather than an
+# action and are excluded from the comparison on both sides (stated in Section 6.6).
+D01,danger,9,lethargic,VERY SEVERE DISEASE,General danger signs - pink,Lethargy alone is a general danger sign
+D02,danger,8,vomits_everything,VERY SEVERE DISEASE,General danger signs - pink,
+D03,danger,36,convulsions,VERY SEVERE DISEASE,General danger signs - pink,
+D04,danger,4,cannot_drink,VERY SEVERE DISEASE,General danger signs - pink,
+D05,danger,24,convulsions;lethargic,VERY SEVERE DISEASE,General danger signs - pink,Two danger signs still give one classification
+D06,danger,18,-,NO SPECIFIC ILLNESS,General danger signs - none present,Booklet has no row for a well child; app convention is a reassurance row
+D07,danger,12,vomits_everything;cough;rr=30,VERY SEVERE DISEASE|SEVERE PNEUMONIA OR VERY SEVERE DISEASE,General danger signs + cough pink,Danger sign makes the cough pink whatever the breath count
+D08,danger,30,lethargic;fever;rdt=pos,VERY SEVERE DISEASE|VERY SEVERE FEBRILE DISEASE,General danger signs + fever pink,Fever pink row takes the danger sign; malaria row is not used
+R01,respiratory,6,cough;rr=52,PNEUMONIA,Cough yellow - fast breathing 50+ under 12 months,
+R02,respiratory,6,cough;rr=49,COUGH OR COLD,Cough green,One below the threshold for this age
+R03,respiratory,11,cough;rr=50,PNEUMONIA,Cough yellow - boundary,Threshold is 50 or more up to 12 months
+R04,respiratory,12,cough;rr=40,PNEUMONIA,Cough yellow - boundary,Threshold changes to 40 or more at 12 months
+R05,respiratory,12,cough;rr=39,COUGH OR COLD,Cough green,One below the threshold for this age
+R06,respiratory,48,difficult_breathing;chest_indrawing;rr=30,PNEUMONIA,Cough yellow - chest indrawing,Chest indrawing is enough without fast breathing
+R07,respiratory,24,cough;stridor,SEVERE PNEUMONIA OR VERY SEVERE DISEASE,Cough pink - stridor in a calm child,
+R08,respiratory,5,cough;cannot_drink;rr=60,VERY SEVERE DISEASE|SEVERE PNEUMONIA OR VERY SEVERE DISEASE,Cough pink - any general danger sign,
+R09,respiratory,36,cough,COUGH OR COLD,Cough green,No breath count recorded and no other sign
+R10,respiratory,2,cough;rr=55,PNEUMONIA,Cough yellow - youngest age in the chart,
+H01,diarrhoea,18,diarrhoea;diarrhoea_days=3;sunken_eyes;drinks_eagerly,SOME DEHYDRATION,Diarrhoea yellow - two signs,
+H02,diarrhoea,18,diarrhoea;diarrhoea_days=3;sunken_eyes,NO DEHYDRATION,Diarrhoea green,One sign only is not enough for some dehydration
+H03,diarrhoea,10,diarrhoea;diarrhoea_days=2;lethargic;pinch_very_slow,VERY SEVERE DISEASE|SEVERE DEHYDRATION,Diarrhoea pink - two severe signs,Lethargy is also a general danger sign
+H04,diarrhoea,24,diarrhoea;diarrhoea_days=16,NO DEHYDRATION|PERSISTENT DIARRHOEA,Diarrhoea yellow - 14 days or more without dehydration,
+H05,diarrhoea,24,diarrhoea;diarrhoea_days=14;restless;sunken_eyes,SOME DEHYDRATION|SEVERE PERSISTENT DIARRHOEA,Diarrhoea pink - 14 days or more with dehydration,Boundary at exactly 14 days
+H06,diarrhoea,30,diarrhoea;diarrhoea_days=4;blood_in_stool,NO DEHYDRATION|DYSENTERY,Diarrhoea yellow - blood in the stool,
+H07,diarrhoea,9,diarrhoea;diarrhoea_days=20;blood_in_stool;drinks_eagerly;restless,SOME DEHYDRATION|SEVERE PERSISTENT DIARRHOEA|DYSENTERY,Diarrhoea - three rows at once,
+H08,diarrhoea,15,diarrhoea;diarrhoea_days=5;drinking_poorly;sunken_eyes,SEVERE DEHYDRATION,Diarrhoea pink - two severe signs,
+H09,diarrhoea,15,diarrhoea;diarrhoea_days=13,NO DEHYDRATION,Diarrhoea green,13 days is below the persistent diarrhoea threshold
+H10,diarrhoea,40,diarrhoea;diarrhoea_days=1;pinch_slow;restless,SOME DEHYDRATION,Diarrhoea yellow - two signs,
+F01,fever,20,fever;fever_days=2;rdt=pos,MALARIA,Fever yellow - test positive,
+F02,fever,20,fever;fever_days=2;rdt=neg,FEVER: NO MALARIA,Fever green - test negative,
+F03,fever,20,fever;fever_days=1;stiff_neck,VERY SEVERE FEBRILE DISEASE,Fever pink - stiff neck,
+F04,fever,20,fever;fever_days=3;convulsions,VERY SEVERE DISEASE|VERY SEVERE FEBRILE DISEASE,Fever pink - any general danger sign,
+F05,fever,20,fever;fever_days=9;rdt=neg,FEVER: NO MALARIA,Fever green + fever every day more than 7 days,Chart adds refer for assessment as advice not a new row
+F06,fever,20,fever;fever_days=2;rdt=none,UNCLASSIFIABLE WITHOUT TEST,Fever - do a malaria test in all fever cases in high risk,The 2014 chart has no presumptive row when no test was done
+F07,fever,20,fever;fever_days=2;rdt=pos;measles,MALARIA|MEASLES,Fever yellow + measles green,
+F08,fever,20,fever;fever_days=2;rdt=neg;measles;cornea_clouding,FEVER: NO MALARIA|SEVERE COMPLICATED MEASLES,Measles pink - clouding of the cornea,
+F09,fever,20,fever;fever_days=2;rdt=neg;measles;pus_from_eye,FEVER: NO MALARIA|MEASLES WITH EYE OR MOUTH COMPLICATIONS,Measles yellow - pus draining from the eye,
+F10,fever,20,fever;fever_days=2;rdt=pos;measles;deep_mouth_ulcers,MALARIA|SEVERE COMPLICATED MEASLES,Measles pink - deep or extensive mouth ulcers,
+F11,fever,30,fever;fever_days=2;rdt=none;no_malaria_risk,FEVER,Fever green - no malaria risk and no travel to a malaria area,
+F12,fever,30,fever;fever_days=2;rdt=none;no_malaria_risk;runny_nose,FEVER,Fever green - no malaria risk with another cause of fever,
+F13,fever,30,fever;fever_days=2;rdt=neg;runny_nose,FEVER: NO MALARIA,Fever green - test negative with another cause of fever,
+E01,ear,14,ear_pain,ACUTE EAR INFECTION,Ear yellow - ear pain,
+E02,ear,14,ear_discharge;ear_discharge_days=3,ACUTE EAR INFECTION,Ear yellow - pus draining less than 14 days,
+E03,ear,14,ear_discharge;ear_discharge_days=14,CHRONIC EAR INFECTION,Ear yellow - pus draining 14 days or more,Boundary at exactly 14 days
+E04,ear,14,ear_discharge;ear_discharge_days=20;ear_pain,CHRONIC EAR INFECTION,Ear yellow - pus draining 14 days or more,Longest-standing sign decides the row
+E05,ear,14,swelling_behind_ear,MASTOIDITIS,Ear pink - tender swelling behind the ear,
+E06,ear,14,swelling_behind_ear;ear_discharge;ear_discharge_days=30,MASTOIDITIS,Ear pink - one classification per module,
+E07,ear,14,ear_discharge;ear_discharge_days=13,ACUTE EAR INFECTION,Ear yellow - boundary,13 days is still acute
+E08,ear,14,cough;rr=20,COUGH OR COLD,Ear - question answered no so no ear row,A child with no ear problem gets no ear classification
+M01,nutrition,24,muac=10.8;appetite=pass,UNCOMPLICATED SEVERE ACUTE MALNUTRITION,Malnutrition yellow - MUAC below 115 mm and finishes RUTF,
+M02,nutrition,24,muac=10.8;appetite=fail,COMPLICATED SEVERE ACUTE MALNUTRITION,Malnutrition pink - not able to finish RUTF,
+M03,nutrition,24,muac=11.5,MODERATE ACUTE MALNUTRITION,Malnutrition yellow - MUAC 115 mm boundary,
+M04,nutrition,24,muac=12.4,MODERATE ACUTE MALNUTRITION,Malnutrition yellow - MUAC up to 125 mm,
+M05,nutrition,24,muac=12.5,NO SPECIFIC ILLNESS,Malnutrition green - MUAC 125 mm or more,No-finding row excluded; app convention adds the reassurance row as in D06
+M06,nutrition,24,oedema;appetite=pass,COMPLICATED SEVERE ACUTE MALNUTRITION,Malnutrition pink - oedema of both feet,Oedema appears only in the pink row of the chart
+M07,nutrition,4,oedema,COMPLICATED SEVERE ACUTE MALNUTRITION,Malnutrition pink - oedema under 6 months,MUAC is not used under 6 months but oedema still is
+M08,nutrition,36,pallor_some,ANAEMIA,Anaemia yellow - some palmar pallor,
+M09,nutrition,36,pallor_severe,SEVERE ANAEMIA,Anaemia pink - severe palmar pallor,
+M10,nutrition,36,muac=11.0;appetite=pass;pallor_severe,SEVERE ANAEMIA|COMPLICATED SEVERE ACUTE MALNUTRITION,Malnutrition pink - a medical complication is present,Severe anaemia is a medical complication
+M11,nutrition,7,muac=11.4;appetite=pass;cough;chest_indrawing,PNEUMONIA|COMPLICATED SEVERE ACUTE MALNUTRITION,Malnutrition pink - chest indrawing is a medical complication,
+M12,nutrition,5,muac=11.0,NO SPECIFIC ILLNESS,Malnutrition - MUAC is measured only from 6 months,MUAC must not be used under 6 months; app convention adds the reassurance row as in D06
+I01,integrated,8,cough;rr=55;diarrhoea;diarrhoea_days=2;fever;rdt=pos;ear_pain;muac=11.8,PNEUMONIA|NO DEHYDRATION|MALARIA|ACUTE EAR INFECTION|MODERATE ACUTE MALNUTRITION,All modules - five classifications,
+I02,integrated,36,lethargic;cough;rr=30;fever;stiff_neck;diarrhoea;diarrhoea_days=3;sunken_eyes;pinch_very_slow,VERY SEVERE DISEASE|SEVERE PNEUMONIA OR VERY SEVERE DISEASE|VERY SEVERE FEBRILE DISEASE|SEVERE DEHYDRATION,All modules - four pink rows,
+I03,integrated,18,diarrhoea;diarrhoea_days=15;blood_in_stool;fever;rdt=neg;muac=11.2;appetite=pass,NO DEHYDRATION|PERSISTENT DIARRHOEA|DYSENTERY|FEVER: NO MALARIA|UNCOMPLICATED SEVERE ACUTE MALNUTRITION,Several yellow rows and no pink row,Dysentery is yellow so it is not a medical complication
+I04,integrated,10,cough;rr=52;fever;rdt=pos;measles,PNEUMONIA|MALARIA|MEASLES,Cough yellow + fever yellow + measles green,
+I05,integrated,50,fever;fever_days=8;rdt=neg;pallor_some;muac=13.0,FEVER: NO MALARIA|ANAEMIA,Fever green + anaemia yellow,MUAC 130 mm is a no-finding row
+I06,integrated,6,oedema;lethargic;diarrhoea;diarrhoea_days=2;drinking_poorly;sunken_eyes,VERY SEVERE DISEASE|SEVERE DEHYDRATION|COMPLICATED SEVERE ACUTE MALNUTRITION,Pink rows in three modules,

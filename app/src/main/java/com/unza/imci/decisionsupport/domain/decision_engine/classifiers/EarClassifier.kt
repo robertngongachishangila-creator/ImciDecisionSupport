@@ -7,15 +7,15 @@ import com.unza.imci.decisionsupport.domain.decision_engine.ImciModule
 import com.unza.imci.decisionsupport.domain.decision_engine.Severity
 
 /**
- * WHO IMCI Chart Booklet — "Does the child have an ear problem?"
+ * WHO IMCI Chart Booklet (March 2014) — "Does the child have an ear problem?"
+ * Assessed for every child. [PatientAssessment.earDischarge] means pus seen draining from the ear.
  *  - Tender swelling behind the ear                       -> MASTOIDITIS
- *  - Discharge for 14 days or more                        -> CHRONIC EAR INFECTION
- *  - Ear pain, or discharge for less than 14 days         -> ACUTE EAR INFECTION
+ *  - Pus draining for 14 days or more                     -> CHRONIC EAR INFECTION
+ *  - Ear pain, or pus draining for less than 14 days      -> ACUTE EAR INFECTION
+ *  - None of the above                                    -> NO EAR INFECTION
  */
 class EarClassifier : ImciClassifier {
     override fun classify(patient: PatientAssessment): List<Classification> {
-        if (!patient.hasEarPain && !patient.earDischarge && !patient.tenderSwellingBehindEar) return emptyList()
-
         val classification = if (patient.tenderSwellingBehindEar) {
             Classification(
                 ImciModule.EAR,
@@ -27,15 +27,23 @@ class EarClassifier : ImciClassifier {
             Classification(
                 ImciModule.EAR,
                 "CHRONIC EAR INFECTION",
-                "Dry the ear by wicking. Apply topical quinolone ear drops. Follow up in 5 days.",
+                "Dry the ear by wicking. Apply topical quinolone ear drops for 14 days. Follow up in 5 days.",
                 Severity.MODERATE
             )
-        } else {
+        } else if (patient.hasEarPain || patient.earDischarge) {
             Classification(
                 ImciModule.EAR,
                 "ACUTE EAR INFECTION",
                 "Give antibiotic for 5 days. Give paracetamol for pain. Dry the ear by wicking. Follow up in 5 days.",
                 Severity.MODERATE
+            )
+        } else {
+            Classification(
+                ImciModule.EAR,
+                "NO EAR INFECTION",
+                "No treatment needed.",
+                Severity.MILD,
+                isNoFinding = true
             )
         }
         return listOf(classification)
